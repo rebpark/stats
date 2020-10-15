@@ -21,11 +21,44 @@ sp = sqrt((99*(120^2) + 99*(100^2))/198)
 ## find the t-value
 t = qt(.05, 198)
 
-## margin of error, a=0.05, t=1.96
+## margin of error, a=0.05
 moe = t*sp*sqrt(.02)
 moe
 ```
 
-The 95% Confidence Interval is 50 ± 25.814.
+The 95% Confidence Interval is 50 $\pm$ 25.814.
+
+
+## 6. Dissolved oxygen
+
+```{r}
+upstream <- c(5.2, 4.8, 5.1, 5.0, 4.9, 4.8, 5.0, 4.7, 4.7, 5.0, 4.6, 5.2, 5.0, 4.9, 4.7)
+downstream <- c(3.2, 3.4, 3.7, 3.9, 3.6, 3.8, 3.9, 3.6, 4.1, 3.3, 4.5, 3.7, 3.9, 3.8, 3.7)
+```
+
+H0: mu upstream - mu downstream $\geq$ 0.5
+
+Ha: mu upstream - mu downstream < 0.5
+
+```{r}
+t.test(upstream, downstream, alternative = "less", mu = .5, conf.level = .99)
+```
+Compare the p-value (1) to the given level of significance (a = 0.01). Since the p-value is much larger than the level of significance, we reject the alternative hypothesis by a mile. The null hypothesis holds true, and there is sufficient evidence to conclude that the reduction in dissolved oxygen is large enough to impact the fish.
+
+b.
+```{r}
+boxplot(upstream, downstream, names = c("upstream", "downstream"), ylab = "Dissolved Oxygen (ppm)", boxwex = .3)
+```
+Yes, these data fulfil the required conditions to use the t-test. Most importantly, there is independence between to two samples and independence of items within each sample. There is no evidence that the samples are paired in any way. As you can see from the boxplots, the sample data are approximately normal, and we can assume the population is similarly normal with similar levels of variance between upstream and downstream.
+
+c. P-value ~ 1.00
+
+d. 
+```{r}
+t.test(upstream, downstream, alternative = "two.sided", mu = .5, conf.level = .99)
+```
+The 99% Confidence Interval for the true difference in means is (0.897, 1.436).
+
+
 
 
