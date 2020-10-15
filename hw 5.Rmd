@@ -1,0 +1,28 @@
+---
+title: "hw 5"
+author: "rebecca park"
+date: "10/20/2020"
+output: pdf_document
+---
+
+## 1. Standardized test
+
+men: n = 100, ybar = 500, s = 120
+
+women: n = 100, ybar = 550, s = 110
+
+```{r}
+## difference of the means
+diff = 550 - 500
+
+## pooled estimate
+sp = sqrt((99*(120^2) + 99*(100^2))/198)
+
+## margin of error, a=0.05, t=1.96
+moe = 1.96*sp*sqrt(.02)
+moe
+```
+
+The 95% Confidence Interval is 50 ± 30.616.
+
+
