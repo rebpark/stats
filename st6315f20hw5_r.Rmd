@@ -4,6 +4,30 @@ author: "wes bonelli"
 output: html_notebook
 ---
 
+## 1. Verbal abilities
+
+```{r}
+nm = 100
+nw = 100
+ym = 500
+yw = 550
+sm = 120
+sw = 110
+verbal_t = qt(0.975, df = 198)
+verbal_sp = sqrt(((99 * sm ^ 2) + (99 * sw ^ 2)) / 198)
+verbal_lb = ym - yw - verbal_t * verbal_sp * sqrt(1/100 + 1/100)
+verbal_ub = ym - yw + verbal_t * verbal_sp * sqrt(1/100 + 1/100)
+
+verbal_lb
+verbal_ub
+```
+
+The 95% confidence interval is approx. [-82.1, -17.9].
+
+## 2. Verbal/Math Abilities
+
+The confidence interval cannot be found. To find a paired sample confidence interval, it would be necessary to know the dependence between samples in order to estimate standard error.
+
 ## 3. NAEP
 
 ```{r}
@@ -57,7 +81,7 @@ y1 = c(5.2, 4.8, 5.1, 5.0, 4.9, 4.8, 5.0, 4.7, 4.7, 5.0, 4.6, 5.2, 5.0, 4.9, 4.7
 y2 = c(3.2, 3.4, 3.7, 3.9, 3.6, 3.8, 3.9, 3.6, 4.1, 3.3, 4.5, 3.7, 3.9, 3.8, 3.7)
 t.test(y1, y2, alternative = "greater", conf.level = 0.99)
 ```
-y1, 
+
 The data do provide evidence that there was a significant reduction in mean dissolved O.
 
 ### 4b.
@@ -76,17 +100,10 @@ The significance level (p-value) is 1.065e-11.
 ### 4d.
 
 ```{r}
-d_mu = mean(y1) - mean(y2)
-d_sd = sqrt(var(y1) + var(y2))
-t = qt(0.005, df = 28)
-ub = d_mu - t * d_sd
-lb = d_mu + t * d_sd
-
-lb
-ub
+t.test(y1, y2, alternative = "two.sided", conf.level = .99)
 ```
 
-The 99% confidence interval for the true drop in mean dissolved O is approx. [0.14, 2.19].
+The 99% confidence interval for the true drop in mean dissolved O is approx. [0.9, 1.44].
 
 ## 5. Twins
 
@@ -115,10 +132,26 @@ hist(twins$Acad)
 hist(twins$NonA)
 ```
 
-
 Both datasets look approximately normal. If the twin pairs were randomly sampled, then the conditions for the paired samples t-test seem to be satisfied.
 
 ### 5d.
 
 ???
+
+## 6. Economists
+
+```{r}
+n1 = 92
+y1 = 5.75
+s1 = 1.2
+n2 = 93
+y2 = 5.27
+s2 = 1.5
+```
+
+### 6a.
+
+```{r}
+
+```
 
