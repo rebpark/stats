@@ -29,7 +29,7 @@ moe
 The 95% Confidence Interval is 50 $\pm$ 25.814.
 
 
-## 6. Dissolved oxygen
+## 4. Dissolved oxygen
 
 ```{r}
 upstream <- c(5.2, 4.8, 5.1, 5.0, 4.9, 4.8, 5.0, 4.7, 4.7, 5.0, 4.6, 5.2, 5.0, 4.9, 4.7)
@@ -49,7 +49,7 @@ b.
 ```{r}
 boxplot(upstream, downstream, names = c("upstream", "downstream"), ylab = "Dissolved Oxygen (ppm)", boxwex = .3)
 ```
-Yes, these data fulfil the required conditions to use the t-test. Most importantly, there is independence between to two samples and independence of items within each sample. There is no evidence that the samples are paired in any way. As you can see from the boxplots, the sample data are approximately normal, and we can assume the population is similarly normal with similar levels of variance between upstream and downstream.
+Yes, these data fulfil the required conditions to use the t-test. We choose the t-test because the samples have n<30. Most importantly, there is independence between to two samples and independence of items within each sample. There is no evidence that the samples are paired in any way. As you can see from the boxplots, the sample data are approximately normal, and we can assume the population is similarly normal with similar levels of variance between upstream and downstream.
 
 c. P-value ~ 1.00
 
@@ -58,6 +58,102 @@ d.
 t.test(upstream, downstream, alternative = "two.sided", mu = .5, conf.level = .99)
 ```
 The 99% Confidence Interval for the true difference in means is (0.897, 1.436).
+
+
+## 5. Twins
+
+```{r echo=FALSE}
+library(readxl)
+Twins <- read_excel("~/Desktop/Twins.xls")
+View(Twins)  
+```
+
+a.
+
+H0: mu academic = mu non-academic
+
+Ha: mu academic $\neq$ mu non-academic
+```{r}
+t.test(Twins$Acad, Twins$NonA, paired = TRUE)
+```
+According to the output, the p-value is ~0, which is less than the level of significance, a=0.05, thus we can reject the null hypothesis and conclude that there is a significant difference between the academic and non-academic home environements.
+
+b. The 95% Confidence Interval is (2.23, 5.37).
+
+c. 
+```{r}
+boxplot(Twins$Acad, Twins$NonA, names = c("Academic", "Non-academic"), ylab = "Final grade", boxwex = .3)
+```
+Yes, these data fulfull the required assumptions for the paired t-test. The t-test is the best option because the sample sizes are small. Because the two samples are not independent of each other, we choose to do a paired difference test. However I am assuming the individuals within each sample are independent. From the boxplot we can see an apporximately normal distribution with similar levels of variance.
+
+d. 
+```{r}
+plot(Twins$Acad, Twins$NonA, xlab="Academic household", ylab = "Non-academic household")
+```
+By using paired sample data, the researchers were able to control for outside factors such as genetic potential. A quick scatter plot shows a strong linear trend between the scores of each pair of twins. To me this suggests that the intelligence of each twin in a pair is in the same range but the academic ones do slightly better, suggesting that the use of paired data was effective in controlling for outside variation. However, I bet if they used a random sample they would have found quite a similar trend, so I'm not entirely convinced that using twins is more effective.
+
+## 6. Happiness study
+
+a. Since we know the true population SD's, we can use the two-sample z-test to find if the sample means are the same.
+```{r}
+## find the observed difference between Y1 and Y2
+OD = 5.75-5.27
+
+## find SE (diff)
+SED = sqrt((((1.2)^2)/92) + ((1.5)^2)/93)
+
+## z-score
+z = OD/SED
+z
+
+## p-value
+1 - pnorm(z)
+
+```
+The value of p = 0.00809, The observed value of z = 2.405. Since this is higher than the z-score, 1.96, we can reject the null hypothesis. I conclude that there is a statistically significant difference between Y1 and Y2.
+
+b. We do not know the true population SD, but assuming the populations have equal variance, we can use a two-sample t-test to find if the sample means are the same.
+```{r}
+## find the observed difference between Y1 and Y2
+OD = 5.75-5.27
+
+## pooled estimate
+sp = sqrt((91*1.44 + 92*2.25)/183)
+
+## t-test
+t = OD/(sp*sqrt((1/92)+(1/93)))
+t
+
+## t-value
+qt(.95, 183)
+
+## p-value
+1 - pt(t, 183)
+```
+The value of p = 0.00866, The observed value of t = 2.402. Since this is higher than the t-statistic, 1.653, we can reject the null hypothesis. Again I conclude that there is a statistically significant difference between Y1 and Y2.
+
+c. We do not know the population SD and do not assume the populations have equal variance.
+```{r}
+## find the observed difference between Y1 and Y2
+OD = 5.75-5.27
+
+## t-test
+t = OD/sqrt((1.44/92)+(2.25/93))
+t
+
+## p-value
+1 - pt(t, 183)
+```
+In this case, the value of p = 0.00859, the observed value of t = 2.405, which is higher than the t-statistic, 1.653. Again we can reject the null hypothesis and conclude that there is a statistically significant difference between Y1 and Y2.
+
+d. The p-values for each method are all very similar. In this example, I think it is because the samples are relatively large and the sample SD's are pretty similar. I'm guessing the different methods would have a more pronounced effect if the samples were very small size or had wildly different variances. However, it does seem like knowing the true population SD gives slightly more confidence in rejecting the null hypothesis.
+
+
+
+
+
+
+
 
 
 
