@@ -141,17 +141,104 @@ Both datasets look approximately normal. If the twin pairs were randomly sampled
 ## 6. Economists
 
 ```{r}
-n1 = 92
-y1 = 5.75
-s1 = 1.2
-n2 = 93
-y2 = 5.27
-s2 = 1.5
+hap_n1 = 92
+hap_y1 = 5.75
+hap_s1 = 1.2
+hap_n2 = 93
+hap_y2 = 5.27
+hap_s2 = 1.5
 ```
 
 ### 6a.
 
-```{r}
+We can use the z-test in this case.
 
+```{r}
+hap_diff = hap_y1 - hap_y2
+hap_se = sqrt(((hap_s1 ^ 2) / hap_n1) + ((hap_s2 ^ 2) / hap_n2))
+hap_z = hap_diff / hap_se
+1 - pnorm(hap_z)
 ```
+
+Our p-value of 0.008 is less than our alpha (0.05), so we can reject the null hypothesis.
+
+### 6b.
+
+We can use the t-test with a pooled estimate of the standad deviation here.
+
+```{r}
+hap_df = hap_n1 + hap_n2 - 2
+hap_sp = sqrt((((hap_s1 ^ 2) * (hap_n1 - 1)) + ((hap_s2 ^ 2) * (hap_n2 - 1))) / hap_df)
+hap_t_pooled = hap_diff / (hap_sp * sqrt((1 / hap_n1) + (1 / hap_n2)))
+1 - pt(hap_t_pooled, df = hap_df)
+```
+
+Our p-value is again below 0.05, so we can reject the null hypothesis.
+
+### 6c.
+
+We can use the t-test here, without a pooled estimate.
+
+```{r}
+hap_df = hap_n1 + hap_n2 - 2
+hap_t_unpooled = hap_diff / sqrt(((hap_s1 ^ 2) / hap_n1) + ((hap_s2 ^ 2) / hap_n2))
+1 - pt(hap_t_unpooled, df = hap_df)
+```
+
+Our p-value is yet again below 0.05, so again we reject the null hypothesis.
+
+### 6d.
+
+The p-values remain relatively similar, although they gradually grow as we use more and more approximate methods. The similarity is likely because both samples share similar standard deviations.
+
+## 7.
+
+```{r}
+sleep = read_excel("sleep.xls")
+t.test(sleep$T, sleep$C)
+```
+
+Our p-value (0.66) is nowhere close to 0.05, so we fail to reject the null hypothesis. There is not evidence for a significant difference in food intake.
+
+## 8.
+
+This is now a paired-samples situation.
+
+```{r}
+t.test(sleep$T, sleep$C, paired = T)
+```
+
+Our p-value (0.013) is less than 0.05, so we can reject the null hypothesis and say there is evidence for a significant difference in mean food intake.
+
+## 9.
+
+### 9a.
+
+```{r}
+headers_n1 = 35
+headers_n2 = 25
+headers_y1 = 112
+headers_y2 = 103
+headers_s1 = 10
+headers_s2 = 8
+headers_diff = headers_y1 - headers_y2
+headers_df = headers_n1 + headers_n2 - 2
+headers_t = qt(0.975, df = 58)
+headers_sp = sqrt(((34 * headers_s1 ^ 2) + (24 * headers_s2 ^ 2)) / headers_df)
+headers_lb = headers_y1 - headers_y2 - headers_t * headers_sp * sqrt(1/35 + 1/24)
+headers_ub = headers_y1 - headers_y2 + headers_t * headers_sp * sqrt(1/35 + 1/24)
+
+headers_sp = sqrt((((headers_s1 ^ 2) * (headers_n1 - 1)) + ((headers_s2 ^ 2) * (headers_n2 - 1))) / headers_df)
+headers_t_pooled = headers_diff / (headers_sp * sqrt((1 / headers_n1) + (1 / headers_n2)))
+1 - pt(headers_t_pooled, df = headers_df)
+```
+
+The data do support the researchers' conclusion: the p-value (0.0002) is lower than 0.05.
+
+### 9b.
+
+In this case we can only conclude that frequently heading the ball and lower IQ are correlated; we cannot conclude that there is necessarily a causal relationship because this was an observation study (i.e., the players were not subjected to head trauma in a controlled environment to determine the effect this has on IQ).
+
+### 10.
+
 
