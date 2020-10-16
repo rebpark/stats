@@ -1,0 +1,33 @@
+---
+title: "HW5"
+author: "wes bonelli"
+output: html_notebook
+---
+
+## 3. NAEP
+
+```{r}
+n = 400
+p1 = 0.85
+q1 = 1 - p1
+p2 = 0.77
+q2 = 1 - p2
+alpha = 0.13
+z = qnorm(1 - (alpha / 2))
+mu1 = n * p1
+mu2 = n * p2
+sigma1 = sqrt(n * p1 * q1)
+sigma2 = sqrt(n * p2 * q2)
+diff = mu1 - mu2
+se_diff = sqrt((sigma1 ^ 2) / n + (sigma2 ^ 2) / n)
+lb = diff - z * se_diff
+percent_lb = lb / 400 * 100
+ub = diff + z * se_diff
+percent_ub = ub / 400 * 100
+
+percent_lb
+percent_ub
+```
+
+Using the normal approximation to the binomial, the 87% confidence interval for the true percentage drop is approx. [7.79%, 8.21%]. It's highly likely that there was a drop.
+
