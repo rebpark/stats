@@ -94,7 +94,6 @@ The 99% Confidence Interval for the true difference in means is (0.897, 1.436).
 ```{r echo=FALSE}
 library(readxl)
 Twins <- read_excel("~/Desktop/Twins.xls")
-View(Twins)  
 ```
 
 a.
@@ -179,6 +178,57 @@ d. The p-values for each method are all very similar. In this example, I think i
 
 
 
+## 7. Sleep
+
+```{r echo=FALSE}
+library(readxl)
+sleep <- read_excel("~/Desktop/sleep.xls")
+```
+
+```{r}
+t.test(sleep$T, sleep$C)
+```
+No difference between Treatment and Control groups. Because p-value = 0.6596, there is not enough evidence that the means of the two groups are different, so we cannot reject the null hypothesis.
+
+## 8. Sleep - paired
+
+```{r}
+t.test(sleep$T, sleep$C, paired = TRUE)
+```
+This changes the basic t-test to a paired difference test. Now there is a difference between Treatment and Control groups. Because p-value = 0.01318, we do reject the null hypothesis.
+
+## 9. Soccer
+
+a.
+```{r}
+n1 = 35 #less than 10 headers / game
+y1 = 112
+s1 = 10
+
+n2 = 25 #more than 10 headers / game
+y2 = 103
+s2 = 8
+
+## difference of the means
+diff = y1 - y2
+
+## pooled estimate
+sp = sqrt((34*(10^2) + 24*(8^2))/58)
+
+## t-test
+t = diff / (sp*((1/n1)+(1/n2)))
+t
+
+## find the t-value
+qt(.975, 58)
+
+## p-value
+1-pt(t, 58)
+```
+
+This data shows that there is a difference in IQ between soccer players who head the ball often and those who do not. The p-value of 0 is less than the a = 0.05.
+
+b. The data does not show heading *caused* the diminished IQ; it only shows correlation, not causation. In order to show causation, the researchers may need to find the players' IQ's before heading the ball a lot.
 
 
 
