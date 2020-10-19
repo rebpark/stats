@@ -19,15 +19,44 @@ diff = 550 - 500
 sp = sqrt((99*(120^2) + 99*(100^2))/198)
 
 ## find the t-value
-t = qt(.05, 198)
+t = qt(.975, 198)
 
 ## margin of error, a=0.05
 moe = t*sp*sqrt(.02)
 moe
 ```
 
-The 95% Confidence Interval is 50 $\pm$ 25.814.
+The 95% Confidence Interval is 50 $\pm$ 30.8039.
 
+
+## 2. Verbal / math abilities
+
+It is not possible to find the confidence interval because we do not know the standard deviation of the differences.
+
+## 3. NAEP
+
+```{r}
+n = 400
+p1 = .85
+q1 = 1 - p1
+p2 = .77
+q2 = 1 - p2
+
+## large sample -- normal approximation
+z = qnorm(.935)
+
+## SE (diff)
+se = sqrt((p1*q1)/n + (p2*q2)/n)
+
+## difference of the means
+p1 - p2
+
+## margin of error
+moe = z*se
+moe
+
+```
+The 87% Confidence Interval for the percentage drop is 0.08 $\pm$ 0.042. I conclude that there was indeed a drop.
 
 ## 4. Dissolved oxygen
 
@@ -41,9 +70,9 @@ H0: mu upstream - mu downstream $\geq$ 0.5
 Ha: mu upstream - mu downstream < 0.5
 
 ```{r}
-t.test(upstream, downstream, alternative = "less", mu = .5, conf.level = .99)
+t.test(upstream, downstream, alternative = "greater", mu = .5, conf.level = .99)
 ```
-Compare the p-value (1) to the given level of significance (a = 0.01). Since the p-value is much larger than the level of significance, we reject the alternative hypothesis by a mile. The null hypothesis holds true, and there is sufficient evidence to conclude that the reduction in dissolved oxygen is large enough to impact the fish.
+Compare the p-value (1) to the given level of significance (a = 0.01). Since the p-value is much less than the level of significance, we reject the alternative hypothesis. I conclude that the reduction in dissolved oxygen is large enough to impact the fish.
 
 b.
 ```{r}
@@ -51,7 +80,7 @@ boxplot(upstream, downstream, names = c("upstream", "downstream"), ylab = "Disso
 ```
 Yes, these data fulfil the required conditions to use the t-test. We choose the t-test because the samples have n<30. Most importantly, there is independence between to two samples and independence of items within each sample. There is no evidence that the samples are paired in any way. As you can see from the boxplots, the sample data are approximately normal, and we can assume the population is similarly normal with similar levels of variance between upstream and downstream.
 
-c. P-value ~ 1.00
+c. P-value = 2.381e-07
 
 d. 
 ```{r}
