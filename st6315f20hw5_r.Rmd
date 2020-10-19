@@ -1,0 +1,258 @@
+---
+title: "HW5"
+author: "wes bonelli"
+output:
+  pdf_document: default
+  html_notebook: default
+---
+
+## 1. Verbal abilities
+
+```{r}
+nm = 100
+nw = 100
+ym = 500
+yw = 550
+sm = 120
+sw = 110
+verbal_t = qt(0.975, df = 198)
+verbal_sp = sqrt(((99 * sm ^ 2) + (99 * sw ^ 2)) / 198)
+verbal_lb = ym - yw - verbal_t * verbal_sp * sqrt(1/100 + 1/100)
+verbal_ub = ym - yw + verbal_t * verbal_sp * sqrt(1/100 + 1/100)
+
+verbal_lb
+verbal_ub
+```
+
+The 95% confidence interval is approx. [-82.1, -17.9].
+
+## 2. Verbal/Math Abilities
+
+The confidence interval cannot be found. To find a paired sample confidence interval, it would be necessary to know the dependence between samples in order to estimate standard error.
+
+## 3. NAEP
+
+```{r}
+n = 400
+p1 = 0.85
+q1 = 1 - p1
+p2 = 0.77
+q2 = 1 - p2
+alpha = 0.13
+z = qnorm(1 - (alpha / 2))
+mu1 = p1
+mu2 = p2
+sigma1 = p1 * q1
+sigma2 = p2 * q2
+diff = mu1 - mu2
+se_diff = sqrt(sigma1 / n + sigma2 / n)
+lb = diff - z * se_diff
+ub = diff + z * se_diff
+
+lb
+ub
+```
+
+Using the normal approximation to the binomial, the 87% confidence interval for the true percentage drop is approx. [3.82%, 12.18%]. It's highly likely that there was a drop in the percentage of 13-year-olds answering the question correctly.
+
+## 4. Dissolved Oxygen
+
+### 4a.
+
+Just to sanity check, find the t-statistic the hard way:
+
+```{r}
+n = 15
+y1 = c(5.2, 4.8, 5.1, 5.0, 4.9, 4.8, 5.0, 4.7, 4.7, 5.0, 4.6, 5.2, 5.0, 4.9, 4.7)
+y2 = c(3.2, 3.4, 3.7, 3.9, 3.6, 3.8, 3.9, 3.6, 4.1, 3.3, 4.5, 3.7, 3.9, 3.8, 3.7)
+m_y1 = mean(y1)
+m_y2 = mean(y2)
+mu = 0.5
+diff = m_y1 - m_y2 - mu
+s_y1 = sd(y1)
+s_y2 = sd(y2)
+s_p = sqrt(((14 * s_y1 ^ 2) + (14 * s_y2 ^ 2)) / 28)
+t = (diff - 0) / (s_p * sqrt(1 / n + 1 / n))
+
+t
+```
+
+Perform the t-test:
+
+```{r}
+y1 = c(5.2, 4.8, 5.1, 5.0, 4.9, 4.8, 5.0, 4.7, 4.7, 5.0, 4.6, 5.2, 5.0, 4.9, 4.7)
+y2 = c(3.2, 3.4, 3.7, 3.9, 3.6, 3.8, 3.9, 3.6, 4.1, 3.3, 4.5, 3.7, 3.9, 3.8, 3.7)
+t.test(y1, y2, alternative = "greater", mu = mu, conf.level = 0.99)
+```
+
+The data do provide evidence that there was a significant reduction in mean dissolved O.
+
+### 4b.
+
+```{r}
+hist(y1)
+hist(y2)
+```
+
+Neither dataset looks particularly normal, but that does not preclude the t-test. It is unclear whether true random sampling was used, but if one assumes so (and that samples were independent) then the conditions for the t-test are satisfied.
+
+### 4c.
+
+The significance level (p-value) is 1.065e-11.
+
+### 4d.
+
+```{r}
+t.test(y1, y2, alternative = "two.sided", conf.level = .99)
+```
+
+The 99% confidence interval for the true drop in mean dissolved O is approx. [0.9, 1.44].
+
+## 5. Twins
+
+```{r}
+library("readxl")
+twins = read_excel("Twins.xls")
+```
+
+
+### 5a.
+
+```{r}
+t.test(twins$Acad, twins$NonA, conf.level = 0.95, paired = TRUE)
+```
+
+Yes, there is likely a difference in the mean final grades (p-value = 2.918e-05).
+
+### 5b.
+
+The 95% confidence interval for size of the difference in mean final grades is approx. [2.23, 5.37].
+
+### 5c.
+
+```{r}
+hist(twins$Acad)
+hist(twins$NonA)
+```
+
+Both datasets look approximately normal. If the twin pairs were randomly sampled, then the conditions for the paired samples t-test seem to be satisfied.
+
+### 5d.
+
+Without comparing against a study which did not sample twin pairs, it is difficult to assess whether using twins effectively controlled for variation in final scores. It seems reasonable to think so, since a random sample of students in both types of home environments does not control at all for genetic predisposition.
+
+## 6. Economists
+
+```{r}
+hap_n1 = 92
+hap_y1 = 5.75
+hap_s1 = 1.2
+hap_n2 = 93
+hap_y2 = 5.27
+hap_s2 = 1.5
+```
+
+### 6a.
+
+We can use the z-test in this case.
+
+```{r}
+hap_diff = hap_y1 - hap_y2
+hap_se = sqrt(((hap_s1 ^ 2) / hap_n1) + ((hap_s2 ^ 2) / hap_n2))
+hap_z = hap_diff / hap_se
+1 - pnorm(hap_z)
+```
+
+Our p-value of 0.008 is less than our alpha (0.05), so we can reject the null hypothesis.
+
+### 6b.
+
+We can use the t-test with a pooled estimate of the standad deviation here.
+
+```{r}
+hap_df = hap_n1 + hap_n2 - 2
+hap_sp = sqrt((((hap_s1 ^ 2) * (hap_n1 - 1)) + ((hap_s2 ^ 2) * (hap_n2 - 1))) / hap_df)
+hap_t_pooled = hap_diff / (hap_sp * sqrt((1 / hap_n1) + (1 / hap_n2)))
+1 - pt(hap_t_pooled, df = hap_df)
+```
+
+Our p-value is again below 0.05, so we can reject the null hypothesis.
+
+### 6c.
+
+We can use the t-test here, without a pooled estimate.
+
+```{r}
+hap_df = hap_n1 + hap_n2 - 2
+hap_t_unpooled = hap_diff / sqrt(((hap_s1 ^ 2) / hap_n1) + ((hap_s2 ^ 2) / hap_n2))
+1 - pt(hap_t_unpooled, df = hap_df)
+```
+
+Our p-value is yet again below 0.05, so again we reject the null hypothesis.
+
+### 6d.
+
+The p-values remain relatively similar, although they gradually grow as we use more and more approximate methods. The similarity is likely because both samples share similar standard deviations.
+
+## 7. Sleep
+
+```{r}
+sleep = read_excel("sleep.xls")
+t.test(sleep$T, sleep$C)
+```
+
+Our p-value (0.66) is nowhere close to 0.05, so we fail to reject the null hypothesis. There is not evidence for a significant difference in food intake.
+
+## 8. Sleep (continued)
+
+This is now a paired-samples situation.
+
+```{r}
+t.test(sleep$T, sleep$C, paired = T)
+```
+
+Our p-value (0.013) is less than 0.05, so we can reject the null hypothesis and say there is evidence for a significant difference in mean food intake.
+
+## 9. Headers
+
+### 9a.
+
+```{r}
+headers_n1 = 35
+headers_n2 = 25
+headers_y1 = 112
+headers_y2 = 103
+headers_s1 = 10
+headers_s2 = 8
+headers_diff = headers_y1 - headers_y2
+headers_df = headers_n1 + headers_n2 - 2
+headers_t = qt(0.975, df = 58)
+headers_sp = sqrt(((34 * headers_s1 ^ 2) + (24 * headers_s2 ^ 2)) / headers_df)
+headers_lb = headers_y1 - headers_y2 - headers_t * headers_sp * sqrt(1/35 + 1/24)
+headers_ub = headers_y1 - headers_y2 + headers_t * headers_sp * sqrt(1/35 + 1/24)
+
+headers_sp = sqrt((((headers_s1 ^ 2) * (headers_n1 - 1)) + ((headers_s2 ^ 2) * (headers_n2 - 1))) / headers_df)
+headers_t_pooled = headers_diff / (headers_sp * sqrt((1 / headers_n1) + (1 / headers_n2)))
+1 - pt(headers_t_pooled, df = headers_df)
+```
+
+The data do support the researchers' conclusion: the p-value (0.0002) is lower than 0.05.
+
+### 9b.
+
+In this case we can only conclude that frequently heading the ball and lower IQ are correlated; we cannot conclude that there is necessarily a causal relationship because this was an observation study (i.e., the players were not subjected to head trauma in a controlled environment to determine the effect this has on IQ).
+
+## 10. Election
+
+### 10a.
+
+```{r}
+n = 13650
+pbinom(n / 2, n, 0.51)
+```
+
+You should sample at least ~13,650 people.
+
+### 10b.
+
+
