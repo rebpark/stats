@@ -247,12 +247,22 @@ In this case we can only conclude that frequently heading the ball and lower IQ 
 ### 10a.
 
 ```{r}
-n = 13650
-pbinom(n / 2, n, 0.51)
+election_n = 13650
+pbinom(election_n / 2, election_n, 0.51)
 ```
 
-You should sample at least ~13,650 people.
+At least ~13,650 people should be sampled.
 
 ### 10b.
 
+```{r}
+election_n = 42750
+election_p = 0.51
+election_q = 1 - election_p
+election_sigma = election_p * election_q
+election_se = sqrt(election_sigma / election_n + election_sigma / election_n)
+pbinom(election_n / 2 + qnorm(0.99) * election_se * election_n, election_n, 0.51)
+```
+
+At least ~42,750 people should be sampled.
 
