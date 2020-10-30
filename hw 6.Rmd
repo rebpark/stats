@@ -9,6 +9,121 @@ output: pdf_document
 
 ```{r}
 library(readxl)
-VideoGames <- read_excel("~/Desktop/UGA/Fall 2020/STAT 6315/hw/hw 6/VideoGames.xls")
+VideoGames <- read_excel("~/Desktop/UGA/Fall 2020/STAT 6315/hw/hw 6/VideoGames.xls", n_max = 40)
+
+# 1-way ANOVA
+m1 = lm(Desire ~ Label, data = VideoGames)
+anova(m1)
+
+# critical F-value
+qf(.95, 3, 36)
+```
+F-statistic = 1.8029
+Degrees of freedom = 3
+P-value = 0.1641
+
+a. **No significant difference between age labels** - the calculated F-statistic is less than 2.866, the critical F-value. The p-value indicates there is a 0.164 probability of observing an F ratio greater than that given the null hypothesis is true, which is not quite a significant value. Thus accept the null hypothesis that there is no difference in rating based on the label. 
+
+b. N/A - do not reject the null hypothesis.
+
+## 2. Fatigue time
+```{r}
+# create data frame
+class <- c(rep("normal", 7), rep("low_ow", 7), rep("med_ow", 7), rep("high_ow", 7))
+time <- c(25, 28, 19, 27, 23, 30, 35, 
+          24, 26, 18, 16, 14, 12, 17, 
+          15, 18, 17, 25, 12, 10, 23, 
+          10, 9, 18, 14, 6, 4, 15)
+fatigue <- data.frame(class, time)
+```
+
+a. The model for a completely randomized design with *t* treatments and *ni* observations per treatment is
+$y_{ij} = \mu_i + \varepsilon_{ij}$ with $\mu_i = \mu + \tau_i$.
+
+*i* = 1, 2, 3, 4
+
+*j* = 1, 2, 3, 4, 5, 6, 7
+
+$y_{ij}$ = fatigue time for jth individual having ith weight class
+
+$\mu_i$ = ith treatment mean
+
+$\mu$ = overal treatment mean
+
+$\tau_i$ = an effect due to treatment *i*, an unknown constant
+
+$\varepsilon_{ij}$ = a random error term
+
+The **response variable** is time to fatigue (in minutes), and the **explanatory factor** is weight class.
+
+b.
+```{r}
+# 1-way ANOVA
+m2 = lm(time ~ class, data = fatigue)
+anova(m2)
+
+# critical F-value
+qf(.975, 3, 24)
+```
+The p-value corresponding to weight class is ~0, which is less than a=0.05, thus there is significant difference in the fatigue time between different weight classifications. Therefore it can be concluded that there is a statistically significant relationship between weight and exercise tolerance.
+
+c. To design an experiment to simultaneously measure the effects of Age, Gender, Excess Weight on Fatigue time, the design will be a factorial treatment structure with three factors: A = age, B = gender, and C = excess weight. Then the design is a completely randomized a X b X c factorial experiment.
+
+## 3. Video games revisited
+
+1-Factor, k=4, n=40, balanced
+
+df1 = 3, df2 = 36
+
+a. six pairs of t-tests: (7plus-12plus, 7plus-16plus, 7plus-18plus, 12plus-16plus, 12plus-18plus, 16plus-18plus)
+
+```{r}
+## group means
+aggregate(VideoGames$Desire, list(VideoGames$Label), FUN = mean)
+```
+
+a.
+```{r}
+library(agricolae)
+m1 = lm(Desire ~ Label, data = VideoGames)
+LSD <- LSD.test(m1, "Label")
+LSD
+```
+
+b.
+```{r}
+library(agricolae)
+m1aov <- aov(Desire ~ Label, data = VideoGames)
+TukeyHSD(m1aov)
+```
+c. Differences between the models
+
+## 5. Used cars
+
+```{r}
+usedcar <- read.table("~/Desktop/UGA/Fall 2020/STAT 6315/hw/hw 6/usedcar.txt", quote="\"", comment.char="")
+
+# create data frame
+age <- c(rep("young", 12), rep("middle", 12), rep("elder", 12))
+price <- c(2300,2450,2150,2200,2100,2225,2075,2250,1975,2225,1900,2100,
+           2750,2675,2700,2850,2625,2900,2725,2975,2800,2650,2600,2900,
+           2350,2000,2550,2150,2175,2325,2100,2000,1950,2025,2200,2075)
+car <- data.frame(age, price)
+
+# 1-way ANOVA
+m5 = lm(price ~ age)
+anova(m5)
+summary(m5)
+```
+RMSE = 150
+
+```{r}
+
 
 ```
+
+
+
+
+
+
