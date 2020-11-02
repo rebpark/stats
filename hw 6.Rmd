@@ -82,7 +82,6 @@ a. six pairs of t-tests: (7plus-12plus, 7plus-16plus, 7plus-18plus, 12plus-16plu
 aggregate(VideoGames$Desire, list(VideoGames$Label), FUN = mean)
 ```
 
-a.
 ```{r}
 library(agricolae)
 m1 = lm(Desire ~ Label, data = VideoGames)
@@ -98,29 +97,165 @@ TukeyHSD(m1aov)
 ```
 c. Differences between the models
 
-## 5. Used cars
+## 4. Margarine PAPUFA
 
 ```{r}
-usedcar <- read.table("~/Desktop/UGA/Fall 2020/STAT 6315/hw/hw 6/usedcar.txt", quote="\"", comment.char="")
+library(readxl)
+margarine <- read_excel("~/Desktop/UGA/Fall 2020/STAT 6315/hw/hw 6/margarine.xls")
 
-# create data frame
+## group means
+aggregate(margarine$PAPUFA, list(margarine$Brand), FUN = mean)
+
+## 1-way ANOVA
+m4 <- lm(PAPUFA ~ Brand, data = margarine)
+anova(m4)
+```
+a. The p-value corresponding to weight class is ~0, which is less than a=0.05, thus there is significant difference in the PAPUFA levels between different brands of margarine.
+
+```{r}
+library(agricolae)
+m4aov <- aov(PAPUFA ~ Brand, data = margarine)
+TukeyHSD(m4aov)
+```
+b. The brands that are significantly different from each other are Fleischmanns-Bluebonnet (p<0.001), Mazola-Bluebonnet (p<0.001), Fleischmanns-Chiffon (p<0.001), Mazola-Chiffon (p<0.001), Imperial-Fleischmanns (p<0.001), Parkay-Fleishmanns (p<0.001), Mazola-Imperial (p<0.001), Parkay-Imperial (p<0.05), and Parkay-Mazola (p<0.001).
+
+In other words, the brands Fleischmanns (mean = 18.1) and Mazola (mean = 17.1) have significantly higher levels than the four other brands (Imperial, Bluebonnet, Chiffon, Parkay), but Fleischmanns and Mazola are not significantly different from each other. Of those four brands with lower levels, the only two that are significantly different are Parkay (mean = 12.8) and Imperial (mean = 14.1).
+
+## 5. Used cars
+
+a. Create data frame
+```{r}
 age <- c(rep("young", 12), rep("middle", 12), rep("elder", 12))
 price <- c(2300,2450,2150,2200,2100,2225,2075,2250,1975,2225,1900,2100,
            2750,2675,2700,2850,2625,2900,2725,2975,2800,2650,2600,2900,
            2350,2000,2550,2150,2175,2325,2100,2000,1950,2025,2200,2075)
 car <- data.frame(age, price)
+```
 
+b. Dot-plot
+```{r}
+stripchart(price ~ age, pch = 19, data = car, method = "jitter", jitter = 0.08)
+```
+Based on the dot-plot, the young and elder age groups appear to have a similar range, while the middle age group appears to be higher. This scatter plot also shows approximately equal variance among groups.
+
+c. Means and SD's
+```{r}
+aggregate(car$price, list(car$age), FUN = mean) 
+aggregate(car$price, list(car$age), FUN = sd)
+```
+
+d. ANOVA table
+```{r}
 # 1-way ANOVA
 m5 = lm(price ~ age)
 anova(m5)
 summary(m5)
 ```
-RMSE = 150
+e. Given that the p-value of ~0 is smaller than a=0.05 , I conclude there is a significant difference in price between the age groups.
+
+f. 90% Confidence Interval between Elder & Young
 
 ```{r}
+## difference in means (young - elder)
+diff1 = 2162.500	- 2158.333
 
+## t-multiplier
+t = qt(.95, 33)
 
+rmse = 150
+
+x = sqrt(1/12 + 1/12)
+
+## margin of error
+moe1 = t*rmse*x
+
+diff1 + moe1 # upper bound
+diff1 - moe1 # lower bound
 ```
+The 90% CI for mean difference in price offered to the elder v. younger groups is **(-99.468, 107.803)**. Because the CI includes zero, I conclude that there is no significant difference between the price offered to elder and younger groups.
+
+g. 95% Confidence Interval between Middle-age and Young
+
+```{r}
+## difference in means (middle - young)
+diff2 = 2762.500 - 2162.500
+
+## t-multiplier
+t = qt(.975, 33)
+
+rmse = 150
+
+x = sqrt(1/12 + 1/12)
+
+## margin of error
+moe2 = t*rmse*x
+
+diff2 + moe2 #upper bound
+diff2 - moe2 #lower bound
+```
+The 95% CI for mean difference in price offered to the middle age v. younger groups is **(475.412, 724.588)**. Because the CI does not include zero, the difference is statistically significant, thus I conclude (at level a=0.05) that the middle age group is offered 475 - 725 USD more than the younger group on average.
+
+h. In an ANOVA analysis, the explanatory variable (age) is treated as a qualitative (categorical) variable, in this case k=3, "young", "middle", or "elder". In a regression analysis, the explanatory variable (age) is treated as a quantitative (continuous) variable. In this case, I actually think a regression analysis does make more sense because age is a continuous variable in real life. From using the ANOVA method, we do not know the spread of ages within each group.
+
+## 6. Teacher evaluation
+
+## 7. Programmer estimates
+
+```{r}
+progestr <- read.csv("~/Desktop/UGA/Fall 2020/STAT 6315/hw/hw 6/progestr.txt", sep="")
+```
+
+a. This is a two-factor design with **a=2** (Type - small, both), **b=3** (Experience - low, medium, high), and **r=4**.
+
+b. 
+```{r}
+## Two-way interactions model
+m7i <- lm(Error ~ Syst + Exp + Syst*Exp, data = progestr)
+anova(m7i)
+summary(m7i)
+```
+
+c. 
+```{r}
+## Two-way additive model
+m7a <- lm(Error ~ Syst + Exp, data = progestr)
+anova(m7a)
+summary(m7a)
+```
+The additive (main effects) model is not as accurate as the interaction model because the RMSE value for the interaction model is much lower and the R-squared value is higher.
+
+d.
+```{r}
+## SYSTEM TYPE main effects aggregation
+aggregate(progestr$Error, list(progestr$Syst), mean)
+aggregate(progestr$Error, list(progestr$Syst), sd)
+
+## EXPERIENCE main effects aggregation
+aggregate(progestr$Error, list(progestr$Exp), mean)
+aggregate(progestr$Error, list(progestr$Exp), sd)
+
+## cell effects aggregation
+rep <- aggregate(progestr$Error, list(progestr$Syst, progestr$Exp), length)
+means <- aggregate(progestr$Error, list(progestr$Syst, progestr$Exp), mean)
+std <- aggregate(progestr$Error, list(progestr$Syst, progestr$Exp), sd)
+stat <- cbind(rep, means [3], std [3])
+names(stat) <- c("System Type", "Experience Level", "Cell Size", "Mean", "SD")
+stat
+```
+
+e. No, not all the cells have the same SD's. ??
+
+## 8. U Wisconsin living groups
+
+```{r}
+uwisc <- read_excel("~/Desktop/UGA/Fall 2020/STAT 6315/hw/hw 6/uwisc.xls")
+```
+
+a. This is a two-factor design with a=2 (gender - male, female), b=5 (living situation - dorm, frat/sor, co-op, apt, house), and r=4. 
+
+
+
+
 
 
 
