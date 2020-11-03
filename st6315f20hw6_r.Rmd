@@ -187,6 +187,50 @@ The 95% confidence interval for the mean difference in price offered to elder vs
 
 A simple regression model has only 1 degree of freedom; this statistician's model likely underfit the data. ANOVA is more appropriate given the dataset we have. However since age is not really a categorical variable, if we had continuous age data a regression model would probably be more suitable.
 
+## 6.
+
+### 6a.
+
+```{r}
+teachers = read.table('teval.txt', header = T)
+```
+
+### 6b.
+
+$Y_{ij} = \mu_{i} + e_{ij} \text{ where } (i = 1,\ldots,6; \: j = 1,\ldots,J) \\ \mu_{i}: \text{ group mean } \\ \epsilon_{ij}: \text{ error term } \\ i: \text{ teacher rank } \\ j: \text{ teacher within rank } \\ Y_{ij}: \text{ teacher evaluation score for } j \text{-th teacher in } i \text{-th rank }$
+
+Note that in this (unbalanced) case the number of observations (teachers) $J$ per rank varies between 4 and 7.
+
+### 6c.
+
+Assumptions:
+
+- Random/independent sampling from each group
+- Approx. equal group standard deviations
+- Approx. normal group probability distributions
+
+### 6d.
+
+```{r}
+teachers_model = lm(score ~ factor(teacher), data = teachers)
+anova(teachers_model)
+```
+
+### 6e.
+
+The p-value is 0.6307. We do not have sufficient evidence to claim the groups are not considered similarly effective.
+
+### 6f.
+
+```{r}
+aggregate(teachers$score, list(rank = teachers$teacher), mean)
+aggregate(teachers$score, list(rank = teachers$teacher), sd)
+```
+
+### 6g.
+
+
+
 ## 7. Programmer Estimates
 
 ```{r}
