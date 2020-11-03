@@ -251,13 +251,168 @@ e. No, not all the cells have the same SD's. ??
 uwisc <- read_excel("~/Desktop/UGA/Fall 2020/STAT 6315/hw/hw 6/uwisc.xls")
 ```
 
-a. This is a two-factor design with a=2 (gender - male, female), b=5 (living situation - dorm, frat/sor, co-op, apt, house), and r=4. 
+a. Using the Grand Mean Parameterization, the interaction model is as follows:
+$$Y_{ijk} = \mu + \alpha_i + \beta_j + \gamma_{ij} + \varepsilon_{ijk}$$
+*i* = 1, 2 (gender - male, female)
 
+*j* = 1, 2, 3, 4, 5 (living situation - dorm, frat/sor, co-op, apt, house)
 
+*k* = 1, 2, 3, 4 (four students sampled within each cell)
 
+$Y_{ijk}$ = GPA for *k*th individual having *i*th gender and *j*th living situation
 
+$\mu$ = grand mean
 
+$\alpha_i$ = the effect due to treatment *i*, an unknown constant
 
+$\beta_j$ = the effect due to treatment *j*, an unknown constant
+
+$\gamma_{ij}$ = the effect due to the interaction of *i* and *j*
+
+$\varepsilon_{ijk}$ = a random error term
+
+After the interaction term is deemed insignificant in this example, the model can be reduced to the main effects model as follows:
+$$Y_{ijk} = \mu + \alpha_i + \beta_j + \varepsilon_{ijk}$$
+b. 
+```{r}
+## interactions model
+m8i = lm(GPA ~ factor(SX) + factor(LS) + factor(SX)*factor(LS), data = uwisc)
+anova(m8i)
+summary(m8i)
+```
+
+c. The interaction SX*LS is not significant, p = 0.837.
+
+d. The blocking factor (Gender) is important because the difference between M & F GPA is the only statistically significant factor in the study. In fact, the variable of interest (Living Situation) does not appear to be statistically significant. However there is one caveat - if the administration is solely interested in the variable Living Situation, the blocking factor is unnecessary because there is no interactive effect.
+
+e.
+```{r}
+aggregate(uwisc$GPA, list(uwisc$SX), mean)
+aggregate(uwisc$GPA, list(uwisc$LS), mean)
+
+## grand mean
+grandmean8 = mean(uwisc$GPA)
+
+## SX effects
+3.036 - grandmean8	#F
+2.647 - grandmean8	#M
+
+## LS effects
+2.87250 - grandmean8  #AP
+2.95375 - grandmean8	#CO
+2.54875 - grandmean8	#DO
+2.84000 - grandmean8	#FS
+2.99250 - grandmean8	#HO
+```
+$\mu$ = 2.8415
+
+$\alpha_i$ = (0.1945, -0.1945) for *i* = F, M, respectively
+
+$\beta_j$ = (0.031, 0.11225, -0.29275, -0.0015, 0.151) for *j* = AP, CO, DO, FS, HO, respectively
+
+RMSE = 0.5958 on 30 degrees of freedom
+
+f. The most negative interaction term is (SX = M)*(LS = FS), meaning men living in fraternities have the lowest GPAs. This interaction is smaller than the RMSE, so it is not too important.
+
+g.
+```{r}
+F_CO = c(3.14, 4.00, 2.66, 2.91)
+y = mean(F_CO)
+s = sd(F_CO)
+pnorm(2.55, y, s)
+```
+It is surprising but not unbelievable. Although this is a small sample, if we assume the population to be normally distributed, there is ~14% chance that a female living in a co-op would have a GPA of 2.55 or lower.
+
+h.
+```{r}
+## additive model
+m8a = lm(GPA ~ factor(SX) + factor(LS), data = uwisc)
+anova(m8a)
+summary(m8a)
+```
+Using the additive model, the factor SX is statistically significant in predicting student GPA (p<0.05), but the factor LS is not a significant predictor for GPA.
+
+## 9. Vehicle color preference
+
+a.
+```{r}
+library(readxl)
+color <- read_excel("~/Desktop/UGA/Fall 2020/STAT 6315/hw/hw 6/color.xls")
+
+## group means
+mean(color$Score)
+aggregate(color$Score, list(color$Vehicle), mean)
+aggregate(color$Score, list(color$Driver), mean)
+aggregate(color$Score, list(color$Color), mean)
+```
+
+```{r}
+## Latin square model
+m9 <- lm(Score ~ factor(Vehicle) + factor(Driver) + factor(Color), data = color)
+anova(m9)
+summary(m9)
+```
+
+b. The main variable of interest was Color.
+
+c. The factor that had the most effect on the score was color because it has the lowest p-value (p=0.00279).
+
+d. (ii) YES but directions of difference cannot be determined by the ANOVA table.
+
+e. 
+```{r} 
+grandmean9 = mean(color$Score)
+
+## deviation due to SUV vehicle
+64.4 - grandmean9
+
+## deviation due to Driver 3
+67.2 - grandmean9
+
+## deviation due to Blue color
+81.0 - grandmean9
+```
+
+f. For case (i) the vehicle, driver, and color are all unknown so I would predict the score to be the grand mean (**Y = 66.04**) and the residuals to fit from the model (**RMSE = 10.19**).
+
+For case (ii) the SUV, Driver 3, and Blue color, the score can be predicted using the grand mean and the deviations in part (e). The residuals can be predicted using the standard errors ?????
+```{r}
+## predicted score
+grandmean9 - 1.64 + 1.16 + 14.96
+
+## predicted RMSE
+10.19 - 13.4 - 0.6 +3.4
+```
+Thus I would predict the score to be **Y = 80.52** and **RMSE = -0.41**.
+
+g. In order to predict the least popular combination, I will find the lowest scores from the aggregated group means. By finding the deviations from all the lowest group means, I can predict the lowest possible score.
+```{r}
+## deviation due to pick-up truck
+P = 52.0 - grandmean9
+
+## deviation due to Driver 5
+D5 = 64.4 - grandmean9
+
+## deviation due to Red color
+R = 53.2 - grandmean9
+
+## lowest score
+grandmean9 + P + D5 + R
+```
+???
+
+h.
+```{r}
+library(agricolae)
+LSD <- LSD.test(m9, "Score")
+LSD
+```
+
+```{r}
+library(agricolae)
+m9aov <- aov(Score ~ factor(Vehicle) + factor(Driver) + factor(Color), data = color)
+TukeyHSD(m9aov)
+```
 
 
 
