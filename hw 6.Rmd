@@ -198,6 +198,75 @@ The 95% CI for mean difference in price offered to the middle age v. younger gro
 h. In an ANOVA analysis, the explanatory variable (age) is treated as a qualitative (categorical) variable, in this case k=3, "young", "middle", or "elder". In a regression analysis, the explanatory variable (age) is treated as a quantitative (continuous) variable. In this case, I actually think a regression analysis does make more sense because age is a continuous variable in real life. From using the ANOVA method, we do not know the spread of ages within each group.
 
 ## 6. Teacher evaluation
+a.
+```{r}
+rank <- c(rep("ASST", 5), rep("ASSC", 4), rep("FULL", 5), rep("INST", 7), rep("VIST", 5), rep("GRAD", 5))
+score <- c(2.660, 2.314, 2.713, 2.459, 2.514,
+           3.436, 3.043, 2.255, 2.819,
+           3.040, 2.259, 2.653, 2.245, 2.793,
+           2.655, 3.138, 2.408, 2.926, 2.658, 3.098, 2.776,
+           2.684, 3.697, 3.148, 1.354, 1.825,
+           2.608, 1.532, 2.786, 1.913, 2.946)
+teval <- data.frame(rank, score)
+```
+
+b. One-factor ANOVA model - Group Mean Parameterization $y_{ij} = \mu_i + \varepsilon_{ij}$
+
+*i* = 1, 2, 3, 4, 5 (rank)
+
+*j* = 1, 2, 3, 4, 5, 6, 7 (individual)
+
+$y_{ij}$ = score for jth individual having ith rank
+
+$\mu_i$ = ith treatment mean
+
+$\varepsilon_{ij}$ = a random error term
+
+The response variable is Teacher Evaluation Score, and the explanatory factor is Teacher Rank.
+
+c. Necessary assumptions:
+
+-Samples are randomly and independently selected from respective groups.
+
+-All *i* groups have approximately equal standard deviation.
+
+-All *i* groups are approximately normally distributed.
+
+d. 
+```{r}
+m6 <- lm(score ~ rank, data=teval)
+anova(m6)
+summary(m6)
+```
+
+e. **P = 0.6307** The null hypothesis is there is no difference in the mean scores between the group of teachers. The alternate hypothesis is there is a difference between at least one of the groups' scores. Because the p-value is much larger than a=0.01, I accept the null hypothesis, and I conclude that there is no significant difference between the means of the scores of the six different groups of teachers.
+
+f.
+```{r}
+aggregate(teval$score, list(teval$rank), length)
+aggregate(teval$score, list(teval$rank), mean)
+aggregate(teval$score, list(teval$rank), sd)
+```
+
+g.
+```{r}
+ybar = 2.88825 #sample mean
+s = 0.26154 #standard error
+t = qt(.975, 3)
+moe = t*s ## do I need to divide s by sqrt(n) ??
+
+ybar + moe #upper bound
+ybar - moe #lower bound
+```
+The 95% CI for the evaluation score of a new Associate Prof is **(2.056, 3.721)**.
+
+h.
+```{r}
+library(agricolae)
+m6aov <- aov(score ~ rank, data=teval)
+TukeyHSD(m6aov)
+```
+None of the 15 pairs of group comparisons yields a significant difference.
 
 ## 7. Programmer estimates
 
