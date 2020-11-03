@@ -1,0 +1,233 @@
+---
+title: "HW6"
+author: "wes bonelli"
+output:
+  pdf_document: default
+  html_notebook: default
+---
+
+## 1. Age Restricted Video Games
+
+```{r}
+library("readxl")      
+games = read_excel("VideoGames.xls")
+games = head(games, -2)
+```
+
+### 1a.
+
+```{r}
+games_model = lm(Desire ~ factor(Label), data = games)
+summary(games_model)
+anova(games_model)
+```
+
+$F = 1.8029 \\ df = 3 \\ p \text{-value} = 0.1641$
+
+The p-value of 0.1641 is too large for us to reject the null hypothesis. The data do not provide convincing evidence that the four label groups have different mean ratings.
+
+### 1b. NA (the null hypothesis is not rejected)
+
+## 2. Fatigue Time
+
+```{r}
+fatigue_times = c(25, 28, 19, 27, 23, 30, 35,
+                  24, 26, 18, 16, 14, 12, 17,
+                  15, 18, 17, 25, 12, 10, 23,
+                  10, 9, 18, 14, 6, 4, 15)
+weight_classes = c(rep('Normal', times=7),
+                   rep('1%-10% overweight', times=7),
+                   rep('11%-20% overweight', times=7),
+                   rep('More than 20% overweight', times=7))
+fatigue = data.frame(weight_classes, fatigue_times)
+colnames(fatigue) = c('Weight', 'Fatigue')
+```
+
+### 2a.
+
+This is a completely randomized design with 1 factor (excess weight class) of 4 levels. The explanatory variable is excess weight class, while the response variable is fatigue time.
+
+$Y_{ij} = \mu_{i} + e_{ij} \text{ where } (i = 1,\ldots,4; \: j = 1,\ldots,7) \\ \mu_{i}: \text{ group mean } \\ \epsilon_{ij}: \text{ error term } \\ i: \text{ weight group } \\ j: \text{ individual within group } \\ Y_{ij}: \text{ fatigue time for } j \text{-th individual in } i \text{-th group }$
+
+### 2b.
+
+```{r}
+fatigue_model = lm(Fatigue ~ factor(Weight), data = fatigue)
+summary(fatigue_model)
+anova(fatigue_model)
+```
+
+The p-value of 0.00009453 is well below 0.05, indicating that we have sufficient evidence to reject the null hypothesis and claim there is a significant difference in fatigue time between excess weight groups.
+
+### 2c.
+   
+A 3-factor factorial design could be used, testing the influence of age, gender, and excess weight individually as well as all interactions on fatigue time.
+
+## 3.
+
+### 3a.
+
+```{r}
+pairwise.t.test(fatigue$Fatigue, factor(fatigue$Weight))
+```
+
+The 'Normal'-'More than 20% overweight', 'Normal'-'11%-20% overweight', 'Normal'-'1%-10% overweight', and '1%-10% overweight'-'More than 20% overweight' pairs show significant differences.
+
+### 3b.
+
+```{r}
+TukeyHSD(aov(fatigue_model))
+```
+
+The 'Normal'-'More than 20% overweight', 'Normal'-'11%-20% overweight', and 'Normal'-'1%-10% overweight' pairs show significant differences.
+
+### 3c.
+
+The Tukey-Kramer post-hoc method was slightly more conservative than the naive pairwise t-tests, identifying only 3 significant pair differences (instead of 4).
+
+## 4. Margarine PAPUFA
+
+```{r}
+margarine = read_excel("margarine.xls")
+```
+
+### 4a.
+
+```{r}
+margarine_model = lm(PAPUFA ~ factor(Brand), data = margarine)
+anova(margarine_model)
+```
+
+$F = 79.264 \\ df = 5 \\ p \text{-value} = 1.737e-12$
+
+The p-value is well below 0.05. We have sufficient evidence to claim there are significant differences between average PAPUFA levels.
+
+### 4b.
+
+```{r}
+TukeyHSD(aov(margarine_model))
+```
+
+Mazola and Fleischmanns have noticeably higher PAPUFA levels than the other brands.
+
+## 5. Used Car Prices
+
+### 5a.
+
+```{r}
+library(data.table)
+cars = transpose(read.table('usedcar.txt')) # mirror table over diagonal
+ages = sapply(cars[1,], (function (age) toupper(unlist(age))))
+names(ages) = NULL
+cars = data.frame(tail(cars, -1)) # remove first row
+cars = data.frame('AGE' = c(rep(unlist(ages[1]), times = 12),
+                    rep(unlist(ages[2]), times = 12),
+                    rep(unlist(ages[3]), times = 12)),
+                  'PRICE' =
+                    as.numeric(c(cars[,1], cars[,2], cars[,3])))
+```
+
+### 5b.
+
+```{r}
+cars$COLOR[cars$AGE == ages[1]] = 'red'
+cars$COLOR[cars$AGE == ages[2]] = 'blue'
+cars$COLOR[cars$AGE == ages[3]] = 'green'
+print(paste('Red:', ages[1]))
+print(paste('Blue:', ages[2]))
+print(paste('Green:', ages[3]))
+cars = cars[order(cars$PRICE),] # sort by price
+dotchart(cars$PRICE, color = cars$COLOR)
+```
+
+The mean value of price differs by age: in particular the middle-aged do seem to consistently receive higher price offers than both the young and elderly. The assumption of approximately equal variability does not appear to be justified: the young and elderly groups each span about \$600 from minimum to maximum price, while middle-age spans about \$400.
+
+### 5c.
+
+```{r}
+aggregate(cars$PRICE, list(AGE = cars$AGE), mean)
+aggregate(cars$PRICE, list(AGE = cars$AGE), sd)
+```
+### 5d.
+
+```{r}
+cars_model = lm(PRICE ~ AGE, data = cars)
+anova(cars_model)
+```
+
+### 5e.
+
+The p-value is 4.039e-12. This is far below the threshold of 0.05, so we have sufficient evidence to reject the null hypothesis and claim that the 3 groups cannot sell the car at the same price.
+
+### 5f.
+
+```{r}
+t.test(
+  cars$PRICE[cars$AGE == 'ELDER'],
+  cars$PRICE[cars$AGE == 'YOUNG'],
+  alternative = 'two.sided',
+  conf.level = .90)
+```
+
+The 90% confidence interval for the mean difference in price offered to elder vs. young groups is [-118.1298, 109.7965]. This interval contains 0 (indeed 0 is almost its midpoint), so, based on our data, we can say the mean prices quoted to elder and younger owners seem to be the same or very similar.
+
+### 5g.
+
+```{r}
+t.test(
+  cars$PRICE[cars$AGE == 'MIDDLE'],
+  cars$PRICE[cars$AGE == 'YOUNG'],
+  alternative = 'two.sided',
+  conf.level = .95)
+```
+
+The 95% confidence interval for the mean difference in price offered to elder vs. young groups is [485.4267, 714.5733]. We can say the mean prices quoted to middle-aged and young owners seem to be substantially different.
+
+### 5h.
+
+A simple regression model has only 1 degree of freedom; this statistician's model likely underfit the data. ANOVA is more appropriate given the dataset we have. However since age is not really a categorical variable, if we had continuous age data a regression model would probably be more suitable.
+
+## 7. Programmer Estimates
+
+```{r}
+programmers = read.table('progestr.txt', header = T)
+```
+
+### 7a.
+
+$a = 2, \: b = 3, \: r = 4$
+
+### 7b.
+
+```{r}
+programmers_model = lm(Error ~ factor(Syst) + factor(Exp) + factor(Syst) * factor(Exp), data=programmers)
+anova(programmers_model)
+summary(programmers_model)
+```
+
+```{r}
+programmers_me_model = lm(Error ~ factor(Syst) + factor(Exp), data=programmers)
+anova(programmers_me_model)
+summary(programmers_me_model)
+```
+
+### 7c.
+
+||Low|Medium|High|*Diff*|
+|-|-|-|-|
+|**Small**|$\overline{x} = 222,\: s = 14.3$|$\overline{x} = 106.5, \: s = 9.81$|$\overline{x} = 60.5, \: s = 5.26$||
+|**Both**|$\overline{x} = 62.75, \: s = 7.93$|$\overline{x} = 44.75, \: s = 9.39$|$\overline{x} = 38.75, \: s = 5.06$||
+|*Diff*|$159.25$|$61.75$|$21.75$|
+
+??? not sure how to formally test this
+
+### 7d.
+
+```{r}
+aggregate(programmers$Error, list(programmers$Syst, programmers$Exp), mean)
+aggregate(programmers$Error, list(programmers$Syst, programmers$Exp), sd)
+```
+
+### 7e.
+
+The cells do not all share the same true standard deviation.
