@@ -394,10 +394,10 @@ The best answer is (ii): dark colors seem to be preferred to bright colors based
 
 ```{r}
 colors_mu = mean(colors$Score)
-mean(predict(colors_model))
-mean(colors$Score[colors$Vehicle == 'S']) - colors_mu
-mean(colors$Score[colors$Driver == '3']) - colors_mu
-mean(colors$Score[colors$Color == 'Bu']) - colors_mu
+paste('Grand mean:', colors_mu)
+paste('Vehicle (S):', mean(colors$Score[colors$Vehicle == 'S']) - colors_mu)
+paste('Driver (3):', mean(colors$Score[colors$Driver == '3']) - colors_mu)
+paste('Vehicle (Bu):', mean(colors$Score[colors$Color == 'Bu']) - colors_mu)
 ```
 
 The estimate of the grand mean $\mu$ is 66.04.
