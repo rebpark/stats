@@ -274,7 +274,9 @@ $a = 2, \: b = 3, \: r = 4$
 ### 7b.
 
 ```{r}
-programmers_model = lm(Error ~ factor(Syst) + factor(Exp) + factor(Syst) * factor(Exp), data=programmers)
+programmers_model = lm(
+  Error ~ factor(Syst) + factor(Exp) + factor(Syst) * factor(Exp),
+  data=programmers)
 anova(programmers_model)
 summary(programmers_model)
 ```
@@ -310,7 +312,7 @@ living = read_excel('uwisc.xls')
 
 The grand mean parametrization (where $Y_{ijk} \text{ is the GPA of the } k \text{-th individual in the } j \text{-th living situation in the } i \text{-th gender}$) is:
 
-$Y_{ijk} = \mu + \phi_{i} + \lambda_{j} + \gamma_{ij} + e_{ijk} \text{ where } (i = 1,\ldots,2; \: j = 1,\ldots,5, \: k = 1,\ldots,4) \\ \mu: \text{ grand mean term } \\ \phi: \text{ gender term } \\ \lambda: \text{ living situation term } \\ \gamma: \text{ interaction term } \\ \epsilon: \text{ error term } \\ i: \text{ gender index } \\ j: \text{ living situation index } \\ k: \text { sampled individual index (from each gender/living situation cell) } \\ Y_{ijk}: \text{ GPA }$
+$Y_{ijk} = \mu + \phi_{i} + \lambda_{j} + \gamma_{ij} + e_{ijk} \text{ where } (i = 1,\ldots,2; \: j = 1,\ldots,5, \: k = 1,\ldots,4) \\ \mu: \text{ grand mean term } \\ \phi: \text{ gender term } \\ \lambda: \text{ living situation term } \\ \gamma: \text{ interaction term } \\ \epsilon: \text{ error term } \\ i: \text{ gender index } \\ j: \text{ living situation index } \\ k: \text { sampled individual index (from each gender/living situation cell) } \\ Y: \text{ GPA }$
 
 ### 8b.
 
