@@ -244,6 +244,11 @@ aggregate(teachers$score, list(rank = teachers$teacher), sd)
 
 ```{r}
 confint(teachers_model, level = 0.95)
+predict( # sanity check
+  teachers_model,
+  data.frame(teacher = c('ASSC')),
+  interval = 'confidence',
+  level = 0.95)
 ```
 
 The 95% CI for the new associate professor's evaluation score is [2.3495918, 3.4269082].
