@@ -269,7 +269,7 @@ programmers = read.table('progestr.txt', header = T)
 
 ### 7a.
 
-$a = 2, \: b = 3, \: r = 4$
+This design is 2-factor with $a = 2, \: b = 3, \: r = 4$.
 
 ### 7b.
 
@@ -310,9 +310,11 @@ living = read_excel('uwisc.xls')
 
 ### 8a.
 
-The grand mean parametrization (where $Y_{ijk} \text{ is the GPA of the } k \text{-th individual in the } j \text{-th living situation in the } i \text{-th gender}$) is:
+The grand mean parametrization is:
 
 $Y_{ijk} = \mu + \phi_{i} + \lambda_{j} + \gamma_{ij} + e_{ijk} \text{ where } (i = 1,\ldots,2; \: j = 1,\ldots,5, \: k = 1,\ldots,4) \\ \mu: \text{ grand mean term } \\ \phi: \text{ gender term } \\ \lambda: \text{ living situation term } \\ \gamma: \text{ interaction term } \\ \epsilon: \text{ error term } \\ i: \text{ gender index } \\ j: \text{ living situation index } \\ k: \text { sampled individual index (from each gender/living situation cell) } \\ Y: \text{ GPA }$
+
+$Y_{ijk} \text{ is the GPA of the } k \text{-th individual in the } j \text{-th living situation in the } i \text{-th gender}$.
 
 ### 8b.
 
@@ -357,7 +359,7 @@ paste("RMSE:", 0.5729)
 
 ### 8f.
 
-The most negative interaction is male gender, fraternity living situation, with an effect of -0.3500. While it seems intuitively plausible that fraternity men may face unique obstacles to academic achievement, in absolute terms, this quantity is well below the standard error.
+The most negative interaction is male gender, fraternity living situation, with an effect of -0.3500. While it seems intuitively plausible that fraternity men may face unique obstacles to academic achievement, the effect is well below the size of the standard error.
 
 ### 8g.
 
@@ -407,29 +409,31 @@ paste('Driver (3):', mean(colors$Score[colors$Driver == '3']) - colors_mu)
 paste('Vehicle (Bu):', mean(colors$Score[colors$Color == 'Bu']) - colors_mu)
 ```
 
-The estimate of the grand mean $\mu$ is 66.04.
-The estimate of the deviation due to SUV vehicle is -1.64.
-The estimate of the deviation due to driver 3 is 1.16.
-The estimate of the deviation due to color blue is 14.96.
-
 ### 9f.
 
 #### 9fi.
 
-Since we don't know the specific combination of vehicle, driver, and color, the best estimate we can give is the grand mean, 66.04 $\pm$ 10.19.
+Since we don't know the specific combination of vehicle, driver, and color, the best estimate we can give is the grand mean plus or minus the standard error: 66.04 $\pm$ 10.19.
 
 #### 9fii.
 
 ```{r}
-predict(colors_model, data.frame(Vehicle = c('S'), Driver = c('3'), Color = c('Bu'))) 
+predict(
+  colors_model,
+  data.frame(Vehicle = c('S'), Driver = c('3'), Color = c('Bu')),
+  interval = 'confidence',
+  level = 0.95) 
 ```
 
-The estimate for vehicle S, driver 3, and color blue is 80.52 $\pm$ 10.19.
+A 95% confidence estimate for vehicle S, driver 3, and color blue is 80.52 $\pm$ 16.00532 (C.I. [64.51468, 96.52532]).
 
 ### 9g.
 
 ```{r}
-colors_all_possible_combos = expand.grid(levels(factor(colors$Vehicle)), levels(factor(colors$Driver)), levels(factor(colors$Color)))
+colors_all_possible_combos = expand.grid(
+  levels(factor(colors$Vehicle)),
+  levels(factor(colors$Driver)),
+  levels(factor(colors$Color)))
 names(colors_all_possible_combos) = c('Vehicle', 'Driver', 'Color')
 sort(predict(colors_model, colors_all_possible_combos))
 colors_lowest_score = data.frame(Vehicle = c('P'), Driver = c(5), Color = c('R'))
