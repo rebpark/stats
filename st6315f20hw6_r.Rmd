@@ -45,7 +45,7 @@ colnames(fatigue) = c('Weight', 'Fatigue')
 
 ### 2a.
 
-This is a completely randomized design with 1 factor (excess weight class) of 4 levels. The explanatory variable is excess weight class, while the response variable is fatigue time.
+This is a completely randomized design with 1 factor, excess weight class, and 4 levels. The explanatory variable is excess weight class. The response variable is fatigue time. The group mean parametrization is:
 
 $Y_{ij} = \mu_{i} + e_{ij} \text{ where } (i = 1,\ldots,4; \: j = 1,\ldots,7) \\ \mu_{i}: \text{ group mean } \\ \epsilon_{ij}: \text{ error term } \\ i: \text{ weight group } \\ j: \text{ individual within group } \\ Y_{ij}: \text{ fatigue time for } j \text{-th individual in } i \text{-th group }$
 
@@ -53,7 +53,6 @@ $Y_{ij} = \mu_{i} + e_{ij} \text{ where } (i = 1,\ldots,4; \: j = 1,\ldots,7) \\
 
 ```{r}
 fatigue_model = lm(Fatigue ~ factor(Weight), data = fatigue)
-summary(fatigue_model)
 anova(fatigue_model)
 ```
 
@@ -63,27 +62,48 @@ The p-value of 0.00009453 is well below 0.05, indicating that we have sufficient
    
 A 3-factor factorial design could be used, testing the influence of age, gender, and excess weight individually as well as all interactions on fatigue time.
 
-## 3.
+## 3. Video Games Revisited
 
 ### 3a.
 
 ```{r}
-pairwise.t.test(fatigue$Fatigue, factor(fatigue$Weight))
+library(agricolae)
+games_model = lm(formula = Desire ~ Label, data = games)
+games_model_lsd = LSD.test(games_model, "Label", group = F)
+games_model_lsd
 ```
 
-The 'Normal'-'More than 20% overweight', 'Normal'-'11%-20% overweight', 'Normal'-'1%-10% overweight', and '1%-10% overweight'-'More than 20% overweight' pairs show significant differences.
+The CIs are:
+
+- 12Plus - 16Plus: [-3.1853395, 0.1853395]
+- 12Plus - 18Plus: [-3.1853395, 0.1853395]
+- 12Plus - 7Plus: [-1.9853395, 1.3853395]
+- 16Plus - 18Plus: [-1.6853395, 1.6853395]
+- 16Plus - 7Plus: [-0.4853395, 2.8853395]
+- 18Plus - 7Plus: [-0.4853395, 2.8853395]
+
+None of the pairs are significant at the $\alpha = 0.05$ level.
 
 ### 3b.
 
 ```{r}
-TukeyHSD(aov(fatigue_model))
+TukeyHSD(aov(games_model))
 ```
 
-The 'Normal'-'More than 20% overweight', 'Normal'-'11%-20% overweight', and 'Normal'-'1%-10% overweight' pairs show significant differences.
+The CIs are:
+
+- 12Plus - 16Plus: [-3.738063, 0.738063]
+- 12Plus - 18Plus: [-3.738063, 0.738063]
+- 12Plus - 7Plus: [-2.538063, 1.938063]
+- 16Plus - 18Plus: [-2.238063, 2.238063]
+- 16Plus - 7Plus: [-1.038063, 3.438063]
+- 18Plus - 7Plus: [-1.038063, 3.438063]
+
+Note the inversion of order and sign of the bounds; this is only necessary because the `TukeyHSD` and `LSD.test` methods calculate differences in opposite order. Again, none of the pairs are significant at the $\alpha = 0.05$ level.
 
 ### 3c.
 
-The Tukey-Kramer post-hoc method was slightly more conservative than the naive pairwise t-tests, identifying only 3 significant pair differences (instead of 4).
+There was no difference in conclusions between the LSD and Tukey-Kramer methods, but the Tukey-Kramer method produces wider confidence intervals and larger p-values.
 
 ## 4. Margarine PAPUFA
 
@@ -100,7 +120,7 @@ anova(margarine_model)
 
 $F = 79.264 \\ df = 5 \\ p \text{-value} = 1.737e-12$
 
-The p-value is well below 0.05. We have sufficient evidence to claim there are significant differences between average PAPUFA levels.
+The p-value is very close to 0, so we have sufficient evidence to claim there are significant differences between average PAPUFA levels.
 
 ### 4b.
 
@@ -140,7 +160,7 @@ cars = cars[order(cars$PRICE),] # sort by price
 dotchart(cars$PRICE, color = cars$COLOR)
 ```
 
-The mean value of price differs by age: in particular the middle-aged do seem to consistently receive higher price offers than both the young and elderly. The assumption of approximately equal variability does not appear to be justified: the young and elderly groups each span about \$600 from minimum to maximum price, while middle-age spans about \$400.
+The mean value of price differs by age: in particular the middle-aged seem to consistently receive higher price offers than both the young and elderly. The assumption of approximately equal variability does not seem justified: the young and elderly groups each span about \$600 from minimum to maximum price, while middle-age spans about \$400.
 
 ### 5c.
 
@@ -157,35 +177,27 @@ anova(cars_model)
 
 ### 5e.
 
-The p-value is 4.039e-12. This is far below the threshold of 0.05, so we have sufficient evidence to reject the null hypothesis and claim that the 3 groups cannot sell the car at the same price.
+The p-value is 4.039e-12, well below 0.05, so we have sufficient evidence to reject the null hypothesis and claim that the 3 groups cannot sell the car at the same price.
 
 ### 5f.
 
 ```{r}
-t.test(
-  cars$PRICE[cars$AGE == 'ELDER'],
-  cars$PRICE[cars$AGE == 'YOUNG'],
-  alternative = 'two.sided',
-  conf.level = .90)
+confint(cars_model,  level = 0.9)
 ```
 
-The 90% confidence interval for the mean difference in price offered to elder vs. young groups is [-118.1298, 109.7965]. This interval contains 0 (indeed 0 is almost its midpoint), so, based on our data, we can say the mean prices quoted to elder and younger owners seem to be the same or very similar.
+The 90% confidence interval for the mean difference in price offered to elder vs. young groups is [-99.49789, 107.8312]. This interval contains 0 (indeed 0 is almost its midpoint), so, based on our data, the mean prices quoted to elder and younger owners seem very similar if not indistinguishable.
 
 ### 5g.
 
 ```{r}
-t.test(
-  cars$PRICE[cars$AGE == 'MIDDLE'],
-  cars$PRICE[cars$AGE == 'YOUNG'],
-  alternative = 'two.sided',
-  conf.level = .95)
+confint(cars_model,  level = 0.95)
 ```
 
-The 95% confidence interval for the mean difference in price offered to elder vs. young groups is [485.4267, 714.5733]. We can say the mean prices quoted to middle-aged and young owners seem to be substantially different.
+The 95% confidence interval for the mean difference in price offered to elder vs. young groups is [479.5436, 728.7897]. The mean prices quoted to middle-aged and young owners seem quite different.
 
 ### 5h.
 
-A simple regression model has only 1 degree of freedom; this statistician's model likely underfit the data. ANOVA is more appropriate given the dataset we have. However since age is not really a categorical variable, if we had continuous age data a regression model would probably be more suitable.
+A simple regression has only 1 degree of freedom; this statistician's model likely underfit the data. ANOVA is more appropriate given the dataset we have. However since age is not truly a categorical variable, if we had continuous age data a regression model would probably be more suitable.
 
 ## 6.
 
@@ -214,11 +226,12 @@ Assumptions:
 ```{r}
 teachers_model = lm(score ~ factor(teacher), data = teachers)
 anova(teachers_model)
+summary(teachers_model)
 ```
 
 ### 6e.
 
-The p-value is 0.6307. We do not have sufficient evidence to claim the groups are not considered similarly effective.
+The p-value is 0.6307. We do not have sufficient evidence to claim there is a difference in perceived effectiveness between groups.
 
 ### 6f.
 
@@ -229,7 +242,19 @@ aggregate(teachers$score, list(rank = teachers$teacher), sd)
 
 ### 6g.
 
+```{r}
+confint(teachers_model, level = 0.95)
+```
 
+The 95% CI for the new associate professor's evaluation score is [2.3495918, 3.4269082].
+
+### 6h.
+
+```{r}
+TukeyHSD(aov(teachers_model))
+```
+
+None of the 15 pairs yield significant differences.
 
 ## 7. Programmer Estimates
 
@@ -257,13 +282,7 @@ summary(programmers_me_model)
 
 ### 7c.
 
-||Low|Medium|High|*Diff*|
-|-|-|-|-|
-|**Small**|$\overline{x} = 222,\: s = 14.3$|$\overline{x} = 106.5, \: s = 9.81$|$\overline{x} = 60.5, \: s = 5.26$||
-|**Both**|$\overline{x} = 62.75, \: s = 7.93$|$\overline{x} = 44.75, \: s = 9.39$|$\overline{x} = 38.75, \: s = 5.06$||
-|*Diff*|$159.25$|$61.75$|$21.75$|
-
-??? not sure how to formally test this
+Several interactions appear very significant in this case, so we cannot justifiably substitute the additive model.
 
 ### 7d.
 
@@ -275,3 +294,173 @@ aggregate(programmers$Error, list(programmers$Syst, programmers$Exp), sd)
 ### 7e.
 
 The cells do not all share the same true standard deviation.
+
+## 8. UWisc Living Groups
+
+```{r}
+living = read_excel('uwisc.xls')
+```
+
+### 8a.
+
+The grand mean parametrization (where $Y_{ijk} \text{ is the GPA of the } k \text{-th individual in the } j \text{-th living situation in the } i \text{-th gender}$) is:
+
+$Y_{ijk} = \mu + \phi_{i} + \lambda_{j} + \gamma_{ij} + e_{ijk} \text{ where } (i = 1,\ldots,2; \: j = 1,\ldots,5, \: k = 1,\ldots,4) \\ \mu: \text{ grand mean term } \\ \phi: \text{ gender term } \\ \lambda: \text{ living situation term } \\ \gamma: \text{ interaction term } \\ \epsilon: \text{ error term } \\ i: \text{ gender index } \\ j: \text{ living situation index } \\ k: \text { sampled individual index (from each gender/living situation cell) } \\ Y_{ijk}: \text{ GPA }$
+
+### 8b.
+
+```{r}
+living_model = lm(GPA ~ factor(SX) + factor(LS) + factor(SX) * factor(LS), data = living)
+anova(living_model)
+summary(living_model)
+```
+
+### 8c.
+
+No interactions approach the significance threshold ($\alpha = 0.05$), so we can substitute an additive model.
+
+```{r}
+living_model = lm(GPA ~ factor(SX) + factor(LS), data = living)
+anova(living_model)
+summary(living_model)
+```
+
+Gender appears to have the only significant main effect, with a p-value of 0.039.
+
+### 8d.
+
+Since gender appears to have a significant association with GPA, it is reasonable to use it as a blocking factor if one wishes isolate the effects of living situation.
+
+### 8e.
+
+```{r}
+living_mu = mean(living$GPA)
+living_sx_effect = aggregate(living$GPA, list(living$SX), mean)
+living_ls_effect = aggregate(living$GPA, list(living$LS), mean)
+paste("Grand mean:", living_mu)
+paste("Gender (F):", living_sx_effect$x[living_sx_effect$Group.1 == 'F'] - living_mu)
+paste("Gender (M):", living_sx_effect$x[living_sx_effect$Group.1 == 'M'] - living_mu)
+paste("Living Situation (AP):", living_ls_effect$x[living_ls_effect$Group.1 == 'AP'] - living_mu)
+paste("Living Situation (CO):", living_ls_effect$x[living_ls_effect$Group.1 == 'CO'] - living_mu)
+paste("Living Situation (DO):", living_ls_effect$x[living_ls_effect$Group.1 == 'DO'] - living_mu)
+paste("Living Situation (FS):", living_ls_effect$x[living_ls_effect$Group.1 == 'FS'] - living_mu)
+paste("Living Situation (HO):", living_ls_effect$x[living_ls_effect$Group.1 == 'HO'] - living_mu)
+paste("RMSE:", 0.5729)
+```
+
+### 8f.
+
+The most negative interaction is male gender, fraternity living situation, with an effect of -0.3500. While it seems intuitively plausible that fraternity men may face unique obstacles to academic achievement, in absolute terms, this quantity is well below the standard error.
+
+### 8g.
+
+```{r}
+predict(living_model, data.frame(SX = c('F'), LS = c('CO')), interval="confidence", level=0.95)
+```
+
+At a 95% confidence level, our model predicts a female student living in a co-op to have a GPA of 3.14825 $\pm$ 0.45091 (CI [2.69734, 3.59916]). Since the student's real GPA is outside this confidence interval, we can say the result is surprising.
+
+### 8h.
+
+As seen in 8c, gender has a significant effect on GPA ($p = 0.039$) but living situation does not.
+
+## 9.
+
+### 9a.
+
+```{r}
+colors = read_excel('color.xls')
+```
+
+### 9b.
+
+Color was the factor of most interest to the researchers.
+
+### 9c.
+
+```{r}
+colors_model = lm(Score ~ factor(Color) + factor(Vehicle) + factor(Driver), data = colors)
+anova(colors_model)
+summary(colors_model)
+```
+
+Color has the smallest p-value, and so has the most significant effect on score.
+
+### 9d.
+
+The best answer is (ii): dark colors seem to be preferred to bright colors based on the summary table of main effects, but directions of difference can't be determined from the ANOVA table.
+
+### 9e.
+
+```{r}
+colors_mu = mean(colors$Score)
+mean(predict(colors_model))
+mean(colors$Score[colors$Vehicle == 'S']) - colors_mu
+mean(colors$Score[colors$Driver == '3']) - colors_mu
+mean(colors$Score[colors$Color == 'Bu']) - colors_mu
+```
+
+The estimate of the grand mean $\mu$ is 66.04.
+The estimate of the deviation due to SUV vehicle is -1.64.
+The estimate of the deviation due to driver 3 is 1.16.
+The estimate of the deviation due to color blue is 14.96.
+
+### 9f.
+
+#### 9fi.
+
+Since we don't know the specific combination of vehicle, driver, and color, the best estimate we can give is the grand mean, 66.04 $\pm$ 10.19.
+
+#### 9fii.
+
+```{r}
+predict(colors_model, data.frame(Vehicle = c('S'), Driver = c('3'), Color = c('Bu'))) 
+```
+
+The estimate for vehicle S, driver 3, and color blue is 80.52 $\pm$ 10.19.
+
+### 9g.
+
+```{r}
+colors_all_possible_combos = expand.grid(levels(factor(colors$Vehicle)), levels(factor(colors$Driver)), levels(factor(colors$Color)))
+names(colors_all_possible_combos) = c('Vehicle', 'Driver', 'Color')
+sort(predict(colors_model, colors_all_possible_combos))
+colors_lowest_score = data.frame(Vehicle = c('P'), Driver = c(5), Color = c('R'))
+predict(colors_model, colors_lowest_score)
+```
+
+The combination yielding the lowest expected score (37.52) is vehicle P, driver 5, color R.
+
+### 9h.
+
+```{r}
+colors_model = lm(Score ~ Color + Vehicle + Driver, data = colors)
+colors_lsd = LSD.test(colors_model, "Color", group = F)
+colors_lsd
+```
+
+Using the naive LSD method, the following pairs are significant at $\alpha = 0.1$:
+
+- Bk - G 
+- Bk - R
+- Bk - W
+- Bu - G
+- Bu - R
+- Bu - W
+
+This accords with our answer to 9d: black and blue are significantly different from all other colors, but not from each other.
+
+```{r}
+colors_model = lm(Score ~ factor(Color) + factor(Vehicle) + factor(Driver), data = colors)
+TukeyHSD(aov(colors_model))
+```
+
+Using the Tukey-Kramer method, the following pairs are significant at $\alpha = 0.1$:
+
+- Bk - R
+- Bk - W
+- Bu - G
+- Bu - R
+- Bu - W
+
+The green-black pair is classified differently. The Tukey-Kramer method seems slightly more conservative than the LSD method.
