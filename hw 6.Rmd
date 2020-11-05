@@ -7,6 +7,7 @@ output: pdf_document
 
 ## 1. Age restricted video games
 
+a.
 ```{r}
 library(readxl)
 VideoGames <- read_excel("~/Desktop/UGA/Fall 2020/STAT 6315/hw/hw 6/VideoGames.xls", n_max = 40)
@@ -18,13 +19,15 @@ anova(m1)
 # critical F-value
 qf(.95, 3, 36)
 ```
-F-statistic = 1.8029
-Degrees of freedom = 3
+F-statistic = 1.8029 
+
+Degrees of freedom = 3 
+
 P-value = 0.1641
 
-a. **No significant difference between age labels** - the calculated F-statistic is less than 2.866, the critical F-value. The p-value indicates there is a 0.164 probability of observing an F ratio greater than that given the null hypothesis is true, which is not quite a significant value. Thus accept the null hypothesis that there is no difference in rating based on the label. 
+**No significant difference between age labels** - the calculated F-statistic is less than 2.866, the critical F-value. The p-value indicates there is a 0.164 probability of observing an F ratio greater than that given the null hypothesis is true, which is not quite a significant value. Thus accept the null hypothesis that there is no difference in rating based on the label. 
 
-b. N/A - do not reject the null hypothesis.
+b. **N/A** - do not reject the null hypothesis.
 
 ## 2. Fatigue time
 ```{r}
@@ -37,24 +40,17 @@ time <- c(25, 28, 19, 27, 23, 30, 35,
 fatigue <- data.frame(class, time)
 ```
 
-a. The model for a completely randomized design with *t* treatments and *ni* observations per treatment is
-$y_{ij} = \mu_i + \varepsilon_{ij}$ with $\mu_i = \mu + \tau_i$.
+a. This is a completely randomized design with one factor of four levels. The **response variable** is time to fatigue (in minutes), and the **explanatory factor** is weight class. The group means parameterization model for a completely randomized design with *t* treatments and *ni* observations per treatment is $$y_{ij} = \mu_i + \varepsilon_{ij}$$.
 
-*i* = 1, 2, 3, 4
+*i* = 1, 2, 3, 4 (weight class - normal, low overweight, medium overweight, highly overweight)
 
-*j* = 1, 2, 3, 4, 5, 6, 7
+*j* = 1, 2, 3, 4, 5, 6, 7 (individuals per weight class)
 
 $y_{ij}$ = fatigue time for jth individual having ith weight class
 
 $\mu_i$ = ith treatment mean
 
-$\mu$ = overal treatment mean
-
-$\tau_i$ = an effect due to treatment *i*, an unknown constant
-
 $\varepsilon_{ij}$ = a random error term
-
-The **response variable** is time to fatigue (in minutes), and the **explanatory factor** is weight class.
 
 b.
 ```{r}
@@ -89,13 +85,19 @@ LSD <- LSD.test(m1, "Label")
 LSD
 ```
 
+```{r}
+pairwise.t.test(VideoGames$Desire, factor(VideoGames$Label))
+```
+
 b.
 ```{r}
 library(agricolae)
 m1aov <- aov(Desire ~ Label, data = VideoGames)
 TukeyHSD(m1aov)
 ```
-c. Differences between the models
+None of the groups show a significant difference in response to the different video game labels.
+
+c. The Tukey-Kramer method gives slightly smaller p-values than the LSD / t-tests method.
 
 ## 4. Margarine PAPUFA
 
@@ -130,6 +132,20 @@ price <- c(2300,2450,2150,2200,2100,2225,2075,2250,1975,2225,1900,2100,
            2750,2675,2700,2850,2625,2900,2725,2975,2800,2650,2600,2900,
            2350,2000,2550,2150,2175,2325,2100,2000,1950,2025,2200,2075)
 car <- data.frame(age, price)
+```
+
+```{r include=FALSE}
+## Wes;s code
+library(data.table)
+cars = transpose(read.table("~/Desktop/UGA/Fall 2020/STAT 6315/hw/hw 6/usedcar.txt", quote="\"", comment.char="")) # mirror table over diagonal
+ages = sapply(cars[1,], (function (age) toupper(unlist(age))))
+names(ages) = NULL
+cars = data.frame(tail(cars, -1)) # remove first row
+cars = data.frame('AGE' = c(rep(unlist(ages[1]), times = 12),
+                    rep(unlist(ages[2]), times = 12),
+                    rep(unlist(ages[3]), times = 12)),
+                  'PRICE' =
+                    as.numeric(c(cars[,1], cars[,2], cars[,3])))
 ```
 
 b. Dot-plot
@@ -198,6 +214,75 @@ The 95% CI for mean difference in price offered to the middle age v. younger gro
 h. In an ANOVA analysis, the explanatory variable (age) is treated as a qualitative (categorical) variable, in this case k=3, "young", "middle", or "elder". In a regression analysis, the explanatory variable (age) is treated as a quantitative (continuous) variable. In this case, I actually think a regression analysis does make more sense because age is a continuous variable in real life. From using the ANOVA method, we do not know the spread of ages within each group.
 
 ## 6. Teacher evaluation
+a.
+```{r}
+rank <- c(rep("ASST", 5), rep("ASSC", 4), rep("FULL", 5), rep("INST", 7), rep("VIST", 5), rep("GRAD", 5))
+score <- c(2.660, 2.314, 2.713, 2.459, 2.514,
+           3.436, 3.043, 2.255, 2.819,
+           3.040, 2.259, 2.653, 2.245, 2.793,
+           2.655, 3.138, 2.408, 2.926, 2.658, 3.098, 2.776,
+           2.684, 3.697, 3.148, 1.354, 1.825,
+           2.608, 1.532, 2.786, 1.913, 2.946)
+teval <- data.frame(rank, score)
+```
+
+b. One-factor ANOVA model - Group Mean Parameterization $y_{ij} = \mu_i + \varepsilon_{ij}$
+
+*i* = 1, 2, 3, 4, 5 (rank)
+
+*j* = 1, 2, 3, 4, 5, 6, 7 (individual)
+
+$y_{ij}$ = score for jth individual having ith rank
+
+$\mu_i$ = ith treatment mean
+
+$\varepsilon_{ij}$ = a random error term
+
+The response variable is Teacher Evaluation Score, and the explanatory factor is Teacher Rank.
+
+c. Necessary assumptions:
+
+-Samples are randomly and independently selected from respective groups.
+
+-All *i* groups have approximately equal standard deviation.
+
+-All *i* groups are approximately normally distributed.
+
+d. 
+```{r}
+m6 <- lm(score ~ rank, data=teval)
+anova(m6)
+summary(m6)
+```
+
+e. **P = 0.6307** The null hypothesis is there is no difference in the mean scores between the group of teachers. The alternate hypothesis is there is a difference between at least one of the groups' scores. Because the p-value is much larger than a=0.01, I accept the null hypothesis, and I conclude that there is no significant difference between the means of the scores of the six different groups of teachers.
+
+f.
+```{r}
+aggregate(teval$score, list(teval$rank), length)
+aggregate(teval$score, list(teval$rank), mean)
+aggregate(teval$score, list(teval$rank), sd)
+```
+
+g.
+```{r}
+ybar = 2.88825 #sample mean
+s = 0.26154 #standard error
+t = qt(.975, 3)
+moe = t*s ## do I need to divide s by sqrt(n) ??
+
+ybar + moe #upper bound
+ybar - moe #lower bound
+```
+The 95% CI for the evaluation score of a new Associate Prof is **(2.056, 3.721)**.
+
+h.
+```{r}
+library(agricolae)
+m6aov <- aov(score ~ rank, data=teval)
+TukeyHSD(m6aov)
+```
+None of the 15 pairs of group comparisons yields a significant difference.
 
 ## 7. Programmer estimates
 
@@ -251,13 +336,168 @@ e. No, not all the cells have the same SD's. ??
 uwisc <- read_excel("~/Desktop/UGA/Fall 2020/STAT 6315/hw/hw 6/uwisc.xls")
 ```
 
-a. This is a two-factor design with a=2 (gender - male, female), b=5 (living situation - dorm, frat/sor, co-op, apt, house), and r=4. 
+a. Using the Grand Mean Parameterization, the interaction model is as follows:
+$$Y_{ijk} = \mu + \alpha_i + \beta_j + \gamma_{ij} + \varepsilon_{ijk}$$
+*i* = 1, 2 (gender - male, female)
 
+*j* = 1, 2, 3, 4, 5 (living situation - dorm, frat/sor, co-op, apt, house)
 
+*k* = 1, 2, 3, 4 (four students sampled within each cell)
 
+$Y_{ijk}$ = GPA for *k*th individual having *i*th gender and *j*th living situation
 
+$\mu$ = grand mean
 
+$\alpha_i$ = the effect due to treatment *i*, an unknown constant
 
+$\beta_j$ = the effect due to treatment *j*, an unknown constant
+
+$\gamma_{ij}$ = the effect due to the interaction of *i* and *j*
+
+$\varepsilon_{ijk}$ = a random error term
+
+After the interaction term is deemed insignificant in this example, the model can be reduced to the main effects model as follows:
+$$Y_{ijk} = \mu + \alpha_i + \beta_j + \varepsilon_{ijk}$$
+b. 
+```{r}
+## interactions model
+m8i = lm(GPA ~ factor(SX) + factor(LS) + factor(SX)*factor(LS), data = uwisc)
+anova(m8i)
+summary(m8i)
+```
+
+c. The interaction SX*LS is not significant, p = 0.837.
+
+d. The blocking factor (Gender) is important because the difference between M & F GPA is the only statistically significant factor in the study. In fact, the variable of interest (Living Situation) does not appear to be statistically significant. However there is one caveat - if the administration is solely interested in the variable Living Situation, the blocking factor is unnecessary because there is no interactive effect.
+
+e.
+```{r}
+aggregate(uwisc$GPA, list(uwisc$SX), mean)
+aggregate(uwisc$GPA, list(uwisc$LS), mean)
+
+## grand mean
+grandmean8 = mean(uwisc$GPA)
+
+## SX effects
+3.036 - grandmean8	#F
+2.647 - grandmean8	#M
+
+## LS effects
+2.87250 - grandmean8  #AP
+2.95375 - grandmean8	#CO
+2.54875 - grandmean8	#DO
+2.84000 - grandmean8	#FS
+2.99250 - grandmean8	#HO
+```
+$\mu$ = 2.8415
+
+$\alpha_i$ = (0.1945, -0.1945) for *i* = F, M, respectively
+
+$\beta_j$ = (0.031, 0.11225, -0.29275, -0.0015, 0.151) for *j* = AP, CO, DO, FS, HO, respectively
+
+RMSE = 0.5958 on 30 degrees of freedom
+
+f. The most negative interaction term is (SX = M)*(LS = FS), meaning men living in fraternities have the lowest GPAs. This interaction is smaller than the RMSE, so it is not too important.
+
+g.
+```{r}
+F_CO = c(3.14, 4.00, 2.66, 2.91)
+y = mean(F_CO)
+s = sd(F_CO)
+pnorm(2.55, y, s)
+```
+It is surprising but not unbelievable. Although this is a small sample, if we assume the population to be normally distributed, there is ~14% chance that a female living in a co-op would have a GPA of 2.55 or lower.
+
+h.
+```{r}
+## additive model
+m8a = lm(GPA ~ factor(SX) + factor(LS), data = uwisc)
+anova(m8a)
+summary(m8a)
+```
+Using the additive model, the factor SX is statistically significant in predicting student GPA (p<0.05), but the factor LS is not a significant predictor for GPA.
+
+## 9. Vehicle color preference
+
+a.
+```{r}
+library(readxl)
+color <- read_excel("~/Desktop/UGA/Fall 2020/STAT 6315/hw/hw 6/color.xls")
+
+## group means
+mean(color$Score)
+aggregate(color$Score, list(color$Vehicle), mean)
+aggregate(color$Score, list(color$Driver), mean)
+aggregate(color$Score, list(color$Color), mean)
+```
+
+```{r}
+## Latin square model
+m9 <- lm(Score ~ factor(Vehicle) + factor(Driver) + factor(Color), data = color)
+anova(m9)
+summary(m9)
+```
+
+b. The main variable of interest was Color.
+
+c. The factor that had the most effect on the score was color because it has the lowest p-value (p=0.00279).
+
+d. (ii) YES but directions of difference cannot be determined by the ANOVA table.
+
+e. 
+```{r} 
+grandmean9 = mean(color$Score)
+
+## deviation due to SUV vehicle
+64.4 - grandmean9
+
+## deviation due to Driver 3
+67.2 - grandmean9
+
+## deviation due to Blue color
+81.0 - grandmean9
+```
+
+f. For case (i) the vehicle, driver, and color are all unknown so I would predict the score to be the grand mean (**Y = 66.04**) and the residuals to fit from the model (**RMSE = 10.19**).
+
+For case (ii) the SUV, Driver 3, and Blue color, the score can be predicted using the grand mean and the deviations in part (e). The residuals can be predicted using the standard errors ?????
+```{r}
+## predicted score
+grandmean9 - 1.64 + 1.16 + 14.96
+
+## predicted RMSE
+10.19 - 13.4 - 0.6 +3.4
+```
+Thus I would predict the score to be **Y = 80.52** and **RMSE = -0.41**.
+
+g. In order to predict the least popular combination, I will find the lowest scores from the aggregated group means. By finding the deviations from all the lowest group means, I can predict the lowest possible score.
+```{r}
+## deviation due to pick-up truck
+P = 52.0 - grandmean9
+
+## deviation due to Driver 5
+D5 = 64.4 - grandmean9
+
+## deviation due to Red color
+R = 53.2 - grandmean9
+
+## lowest score
+grandmean9 + P + D5 + R
+```
+???
+
+h.
+```{r}
+library(agricolae)
+LSD <- LSD.test(m9, "Score")
+LSD
+```
+
+```{r}
+library(agricolae)
+m9aov <- aov(Score ~ factor(Vehicle) + factor(Driver) + factor(Color), data = color)
+TukeyHSD(m9aov)
+```
 
 
 
