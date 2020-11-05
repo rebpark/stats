@@ -81,12 +81,25 @@ aggregate(VideoGames$Desire, list(VideoGames$Label), FUN = mean)
 ```{r}
 library(agricolae)
 m1 = lm(Desire ~ Label, data = VideoGames)
-LSD <- LSD.test(m1, "Label")
+LSD <- LSD.test(m1, "Label", group = F)
 LSD
 ```
+12Plus - 16Plus: (-3.1853395, 0.1853395)
 
-```{r}
-pairwise.t.test(VideoGames$Desire, factor(VideoGames$Label))
+12Plus - 18Plus: (-3.1853395, 0.1853395)
+
+12Plus - 7Plus: (-1.9853395, 1.3853395)
+
+16Plus - 18Plus: (-1.6853395, 1.6853395)
+
+16Plus - 7Plus: (-0.4853395, 2.8853395)
+
+18Plus - 7Plus: (-0.4853395, 2.8853395)
+
+**None of the pairs are significantly different at a=0.05.**
+
+```{r include=FALSE}
+pairwise.t.test(VideoGames$Desire, factor(VideoGames$Label), p.adjust.method = 'none')
 ```
 
 b.
@@ -95,9 +108,21 @@ library(agricolae)
 m1aov <- aov(Desire ~ Label, data = VideoGames)
 TukeyHSD(m1aov)
 ```
-None of the groups show a significant difference in response to the different video game labels.
+12Plus - 16Plus: (-0.738063, 3.738063)
 
-c. The Tukey-Kramer method gives slightly smaller p-values than the LSD / t-tests method.
+12Plus - 18Plus: (-0.738063, 3.738063)
+
+12Plus - 7Plus: (-1.938063, 2.538063)
+
+16Plus - 18Plus: (-2.238063, 2.238063)
+
+16Plus - 7Plus: (-3.438063, 1.038063)
+
+18Plus - 7Plus: (-3.438063, 1.038063)
+
+**Again, none of the groups show a significant difference in response to the different video game labels.**
+
+c. The Tukey-Kramer method gives larger confidence intervals and larger p-values than the LSD / t-tests method, i.e. the TK test is slightly more conservative than the "naive" method.
 
 ## 4. Margarine PAPUFA
 
@@ -146,6 +171,16 @@ cars = data.frame('AGE' = c(rep(unlist(ages[1]), times = 12),
                     rep(unlist(ages[3]), times = 12)),
                   'PRICE' =
                     as.numeric(c(cars[,1], cars[,2], cars[,3])))
+
+## dot plot
+cars$COLOR[cars$AGE == ages[1]] = 'red'
+cars$COLOR[cars$AGE == ages[2]] = 'blue'
+cars$COLOR[cars$AGE == ages[3]] = 'green'
+print(paste('Red:', ages[1]))
+print(paste('Blue:', ages[2]))
+print(paste('Green:', ages[3]))
+cars = cars[order(cars$PRICE),] # sort by price
+dotchart(cars$PRICE, color = cars$COLOR)
 ```
 
 b. Dot-plot
@@ -190,8 +225,20 @@ diff1 - moe1 # lower bound
 ```
 The 90% CI for mean difference in price offered to the elder v. younger groups is **(-99.468, 107.803)**. Because the CI includes zero, I conclude that there is no significant difference between the price offered to elder and younger groups.
 
-g. 95% Confidence Interval between Middle-age and Young
+```{r include = FALSE}
+## not the correct method because it reduces df from 33 to 21
+t.test(
+  cars$PRICE[cars$AGE == 'ELDER'],
+  cars$PRICE[cars$AGE == 'YOUNG'],
+  alternative = 'two.sided',
+  conf.level = .90)
+```
 
+```{r include = FALSE}
+confint(m5,  level = 0.9)
+```
+
+g. 95% Confidence Interval between Middle-age and Young
 ```{r}
 ## difference in means (middle - young)
 diff2 = 2762.500 - 2162.500
@@ -211,9 +258,23 @@ diff2 - moe2 #lower bound
 ```
 The 95% CI for mean difference in price offered to the middle age v. younger groups is **(475.412, 724.588)**. Because the CI does not include zero, the difference is statistically significant, thus I conclude (at level a=0.05) that the middle age group is offered 475 - 725 USD more than the younger group on average.
 
-h. In an ANOVA analysis, the explanatory variable (age) is treated as a qualitative (categorical) variable, in this case k=3, "young", "middle", or "elder". In a regression analysis, the explanatory variable (age) is treated as a quantitative (continuous) variable. In this case, I actually think a regression analysis does make more sense because age is a continuous variable in real life. From using the ANOVA method, we do not know the spread of ages within each group.
+```{r include = FALSE}
+## not the correct method because it reduces df from 33 to 21
+t.test(
+  cars$PRICE[cars$AGE == 'MIDDLE'],
+  cars$PRICE[cars$AGE == 'YOUNG'],
+  alternative = 'two.sided',
+  conf.level = .95)
+```
+
+```{r include = FALSE}
+confint(m5,  level = 0.95)
+```
+
+h. In an ANOVA analysis, the explanatory variable (age) is treated as a qualitative (categorical) variable, in this case k=3, "young", "middle", or "elder". In a regression analysis, the explanatory variable (age) is treated as a quantitative (continuous) variable. In this case, I actually think a regression analysis does make more sense because age is continuous in real life. From using the ANOVA method, we do not know the spread of ages within each group.
 
 ## 6. Teacher evaluation
+
 a.
 ```{r}
 rank <- c(rep("ASST", 5), rep("ASSC", 4), rep("FULL", 5), rep("INST", 7), rep("VIST", 5), rep("GRAD", 5))
@@ -226,7 +287,7 @@ score <- c(2.660, 2.314, 2.713, 2.459, 2.514,
 teval <- data.frame(rank, score)
 ```
 
-b. One-factor ANOVA model - Group Mean Parameterization $y_{ij} = \mu_i + \varepsilon_{ij}$
+b. One-factor ANOVA model (unbalanced): the response variable is Teacher Evaluation Score, and the explanatory factor is Teacher Rank. The Group Mean Parameterization Model is given by $$y_{ij} = \mu_i + \varepsilon_{ij}$$
 
 *i* = 1, 2, 3, 4, 5 (rank)
 
@@ -237,8 +298,6 @@ $y_{ij}$ = score for jth individual having ith rank
 $\mu_i$ = ith treatment mean
 
 $\varepsilon_{ij}$ = a random error term
-
-The response variable is Teacher Evaluation Score, and the explanatory factor is Teacher Rank.
 
 c. Necessary assumptions:
 
@@ -269,12 +328,22 @@ g.
 ybar = 2.88825 #sample mean
 s = 0.26154 #standard error
 t = qt(.975, 3)
-moe = t*s ## do I need to divide s by sqrt(n) ??
+moe = t*s
 
 ybar + moe #upper bound
 ybar - moe #lower bound
 ```
 The 95% CI for the evaluation score of a new Associate Prof is **(2.056, 3.721)**.
+
+```{r include = FALSE}
+## Wes's code - different answer
+confint(m6, level = 0.95)
+predict( # sanity check
+  m6,
+  data.frame(teval = c('ASSC')),
+  interval = 'confidence',
+  level = 0.95)
+```
 
 h.
 ```{r}
@@ -307,7 +376,7 @@ m7a <- lm(Error ~ Syst + Exp, data = progestr)
 anova(m7a)
 summary(m7a)
 ```
-The additive (main effects) model is not as accurate as the interaction model because the RMSE value for the interaction model is much lower and the R-squared value is higher.
+The interactions term has a significant p-value (p = 0). Thus the additive (main effects) model is not as accurate as the interaction model. The interaction term should not be deleted.
 
 d.
 ```{r}
@@ -328,7 +397,7 @@ names(stat) <- c("System Type", "Experience Level", "Cell Size", "Mean", "SD")
 stat
 ```
 
-e. No, not all the cells have the same SD's. ??
+e. No, not all the cells have the same SD's.
 
 ## 8. U Wisconsin living groups
 
@@ -366,7 +435,7 @@ anova(m8i)
 summary(m8i)
 ```
 
-c. The interaction SX*LS is not significant, p = 0.837.
+c. The interaction SX*LS is not significant (p = 0.837). The only significant main effect is SX (p = 0.0477).
 
 d. The blocking factor (Gender) is important because the difference between M & F GPA is the only statistically significant factor in the study. In fact, the variable of interest (Living Situation) does not appear to be statistically significant. However there is one caveat - if the administration is solely interested in the variable Living Situation, the blocking factor is unnecessary because there is no interactive effect.
 
@@ -426,6 +495,7 @@ color <- read_excel("~/Desktop/UGA/Fall 2020/STAT 6315/hw/hw 6/color.xls")
 
 ## group means
 mean(color$Score)
+sd(color$Score)
 aggregate(color$Score, list(color$Vehicle), mean)
 aggregate(color$Score, list(color$Driver), mean)
 aggregate(color$Score, list(color$Color), mean)
@@ -458,17 +528,14 @@ grandmean9 = mean(color$Score)
 81.0 - grandmean9
 ```
 
-f. For case (i) the vehicle, driver, and color are all unknown so I would predict the score to be the grand mean (**Y = 66.04**) and the residuals to fit from the model (**RMSE = 10.19**).
+f. For case (i) the vehicle, driver, and color are all unknown so I would predict the score to be the grand mean (**Y = 66.04**) and the RMSE is simply the standard error from the grand mean (**RMSE = 17.67409**) 
 
-For case (ii) the SUV, Driver 3, and Blue color, the score can be predicted using the grand mean and the deviations in part (e). The residuals can be predicted using the standard errors ?????
+For case (ii) the SUV, Driver 3, and Blue color, the score can be predicted using the grand mean and the deviations in part (e).
 ```{r}
 ## predicted score
 grandmean9 - 1.64 + 1.16 + 14.96
-
-## predicted RMSE
-10.19 - 13.4 - 0.6 +3.4
 ```
-Thus I would predict the score to be **Y = 80.52** and **RMSE = -0.41**.
+Thus I would predict the score to be **Y = 80.52** and RMSE comes from the residuals from the model (**RMSE = 10.19**)
 
 g. In order to predict the least popular combination, I will find the lowest scores from the aggregated group means. By finding the deviations from all the lowest group means, I can predict the lowest possible score.
 ```{r}
@@ -484,21 +551,23 @@ R = 53.2 - grandmean9
 ## lowest score
 grandmean9 + P + D5 + R
 ```
-???
+The lowest predicted score is **37.52 for the Pick-up truck, Driver #3, Red color**.
 
 h.
-```{r}
+```{r eval = FALSE}
 library(agricolae)
-LSD <- LSD.test(m9, "Score")
+m9 <- lm(Score ~ factor(Vehicle) + factor(Driver) + factor(Color), data = color)
+LSD = LSD.test(m9, "Score", group = F)
 LSD
 ```
+Given a=0.10 there are 86 significantly different pairs using the LSD test.
 
-```{r}
+```{r eval = FALSE}
 library(agricolae)
 m9aov <- aov(Score ~ factor(Vehicle) + factor(Driver) + factor(Color), data = color)
 TukeyHSD(m9aov)
 ```
-
+Given a=0.10 there are 9 pairs that are significantly different using the TK method.
 
 
 
