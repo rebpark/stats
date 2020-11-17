@@ -1,0 +1,179 @@
+---
+title: "hw 7"
+author: "rebecca park"
+date: "11/15/2020"
+output: pdf_document
+---
+
+## 1. Flow rate
+
+## a.
+```{r}
+.12 + 0.095*10
+```
+The mean flow rate for X = 10 is **1.07 inches/unit time**.
+
+```{r}
+.12 + 0.095*15
+```
+The mean flow rate for X = 15 is **1.545 inches/unit time**.
+
+## b.
+The average change in flow rate is given by the slope of the linear model, $\beta_0$ = **0.095**.
+
+## c.
+
+
+## 2. Hormone replacement therapy
+```{r}
+HRT <- c(46.3, 40.6, 39.5, 36.6, 30.0)
+BCI <- c(103.3, 105.0, 100.0, 93.8, 83.5)
+plot(HRT, BCI)
+```
+
+## a.
+
+```{r}
+HRTmodel <- lm(BCI ~ HRT)
+summary(HRTmodel)
+```
+
+The equation of the regression line is **BCI = 45.5727 + 1.335*HRT**
+
+## b.
+For every one percent increase in HRT, BCI is estimated to **increase by 1.335**.
+
+## c.
+If HRT = 40% , BCI = 45.5727 + 1.335(40) = **98.9727**
+
+## d.
+This regression equation should not be used if the HRT % is outside the range (30.0, 46.3) because that would be extrapolating beyond the range of the data.
+
+## e.
+```{r}
+cor.test(HRT, BCI)
+```
+**R2 = 0.8303** This is a measure of how close the data are to the fitted regression line. More specifically, it's the percentage of the response variable variation that is explained by the linear model.
+
+**r = 0.9112** This means the x and y variables have a positive relationship & they are very closely correlated.
+
+## f.
+**RMSE = 4.154 on 3 df** This value represents the variance around the line. Specifically, the residuals are found by $y_i - \hat{y}_i$ for each data point i.
+
+## 3. Closed head injuries
+```{r}
+library(readxl)
+CHI <- read_excel("CHI.xls")
+```
+
+## a.
+```{r}
+plot(CHI$Control, CHI$CHI, xlab = "Control", ylab = "Closed Head Injury")
+CHImodel <- lm(CHI ~ Control, data = CHI)
+CHIline = abline(CHImodel)
+```
+
+## b.
+
+
+
+## 4. MBA students (#11.44)
+
+```{r}
+library(readxl)
+MBA <- read_excel("MBA.xls")
+```
+
+## a.
+```{r}
+plot(MBA$EXPER, MBA$SALARY, xlab = "Experience", ylab = "Salary")
+```
+Based on the scatter plot, most of the students with less experience have smaller salaries, but this is not always true.
+
+## b.
+There is one outlier with 14 years of experience and a salary of 97.9, while everyone else making less than 100 have less than 5 years of experience.
+
+## 5. MBA students (#11.45)
+
+## a.
+```{r}
+cor.test(MBA$EXPER, MBA$SALARY)
+```
+The Pearson Correlation Coefficient is **0.6946**, which matches the positive trend observed in the scatter plot.
+
+## b.
+```{r}
+cor.test(MBA$EXPER, MBA$SALARY, method = 'spearman')
+```
+The spearman rank correlation coefficient is **0.7042**.
+
+## c.
+Pearson’s *r* is more extremely affected by outliers since it measures the linear association between two variables.  On the other hand, Spearman’s rank correlation is less afected by outliers because it is a nonparametric approach to measuring correlation using rank values. Thus Spearman’s $\rho$ indicates a stronger correlation than previously estimated with Pearson’s *r* since there is one outlier in the data.
+
+## 6. MBA students (#11.46)
+
+## a.
+```{r}
+MBAmodel = lm(SALARY ~ EXPER, data = MBA)
+summary(MBAmodel)
+```
+**$\beta_0$ = 100.62**
+
+**$\beta_1$ = 1.49**
+
+This model indicates that a student with zero years of experience would make 100,616 USD salary, and each student will make an additional 1490 USD for each additional year of experience. The intercept is meaningful in this example because there are actually individuals with zero years of experience (X = 0), and their salaries align with the predicted value (Y = 100.6), so it is not extrapolating beyond the data.
+
+## b. 
+**RMSE = 5.56 on 50 df** I guess this indicates that 95% of prediction errors will be $\pm 11$.
+
+## c. 
+The t-value from the linear model is 6.828. The critical t-value for $\alpha$ = 0.05 and 50 df is `r qt(.975, 50)`. Since |t| > $t_{\alpha/2}$, reject the null hypothesis. Hence I conclude there is a significant relationship between salary and experience.
+
+## d.
+**R^2 = 0.4825** Hence 48% of the variability in salaries is explained by the model.
+
+## 7. MBA students (#11.47)
+
+## a.
+This student is a **high influence point**. Although it is extreme in both the x- and y-directions, it has higher influence when compared to leverage because it falls outside the pattern of the other points.
+
+## b.
+The slope would **increase** if this outlier were removed.
+
+## c.
+The value of the residual standard deviation would **decrease** if this outlier were removed.
+
+## d.
+The value of the correlation coefficient would **increase** if this outlier were removed.
+
+## 8. MBA students (#11.48)
+
+## a.
+```{r}
+## remove outlier
+MBA1 = MBA[-11,]
+MBA1model = lm(SALARY ~ EXPER, data = MBA1)
+summary(MBA1model)
+```
+After removing the outlier, the slope of the linear model increased from 1.49 to **$\beta_1$ = 1.89**.The residual standard error decreased from 5.556 on 50 df to **RMSE = 4.257 on 49 df**.
+
+## b.
+```{r}
+cor.test(MBA1$EXPER, MBA1$SALARY)
+```
+After removing the outlier, the correlation coefficient increased from 0.695 to **r = 0.832**.
+
+## c.
+```{r}
+cor.test(MBA1$EXPER, MBA1$SALARY, method = 'spearman')
+```
+The spearman rank correlation coefficient is **0.799**.
+
+## d.
+The standard correlation coefficient increased by `r 0.832 - 0.695` while the spearman rank correlation coefficient increased by `r 0.799 - 0.7042`. Thus removing the outlier had a greater effect on the standard correlation coefficient.
+
+
+
+
+
+
