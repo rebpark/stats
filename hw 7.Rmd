@@ -55,7 +55,7 @@ HRTmodel <- lm(BCI ~ HRT)
 summary(HRTmodel)
 ```
 
-The equation of the regression line is **BCI = 45.5727 + 1.335*HRT**
+The equation of the regression line is **BCI = 45.5727 + 1.335 HRT**
 
 ## b.
 For every one percent increase in HRT, BCI is estimated to **increase by 1.335**.
@@ -98,7 +98,7 @@ summary(CHImodel)
 
 ## c.
 ```{r}
-CHImodelni = lm(CHI ~ Control - 1, data = CHI) # no intercept model
+CHImodelni = lm(CHI ~ Control + 0, data = CHI) # no intercept model
 summary(CHImodelni)
 ```
 In the no-intercept model, the value for the slope becomes **$\hat{\beta}$ = 1.476**. This means that the time for a CHI person to perform a task is 48% longer than a non-impaired person. Model (a) fits better than (c) by definition, but Model (c) is simpler to interpret, and the $\beta$ values are similar.
@@ -182,19 +182,19 @@ MBA1 = MBA[-11,]
 MBA1model = lm(SALARY ~ EXPER, data = MBA1)
 summary(MBA1model)
 ```
-After removing the outlier, the slope of the linear model increased from 1.49 to **$\beta_1$ = 1.89**.The residual standard error decreased from 5.556 on 50 df to **RMSE = 4.257 on 49 df**.
+After removing the outlier, the slope of the linear model **increased by 0.4** from 1.49 to $\beta_1$ = 1.89.The residual standard error **decreased by 1.299** from RMSE = 5.556 on 50 df, to RMSE = 4.257 on 49 df.
 
 ## b.
 ```{r}
 cor.test(MBA1$EXPER, MBA1$SALARY)
 ```
-After removing the outlier, the correlation coefficient increased from 0.695 to **r = 0.832**.
+After removing the outlier, the correlation coefficient **increased by 0.137** from r = 0.695 to r = 0.832.
 
 ## c.
 ```{r}
 cor.test(MBA1$EXPER, MBA1$SALARY, method = 'spearman')
 ```
-The spearman rank correlation coefficient is **0.799**.
+The spearman rank correlation coefficient **increased by 0.0948** from $\rho$ = 0.7042 to $\rho$ = 0.799.
 
 ## d.
 The standard correlation coefficient increased by `r 0.832 - 0.695` while the spearman rank correlation coefficient increased by `r 0.799 - 0.7042`. Thus removing the outlier had a greater effect on the standard correlation coefficient.
@@ -211,7 +211,7 @@ plot(Bears$Weight, Bears$Age)
 ```
 
 ## a.
-```{r}
+```{r echo=FALSE}
 bearmod1 = lm(Bears$Range ~ Bears$Age)
 summary(bearmod1)
 
@@ -223,7 +223,7 @@ summary(bearmod3)
 ```
 
 ## b.
-```{r}
+```{r include=FALSE}
 library(DHARMa)
 simulateResiduals(bearmod3, plot=T)
 ```
