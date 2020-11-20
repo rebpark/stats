@@ -9,19 +9,35 @@ output: pdf_document
 
 ## a.
 ```{r}
-.12 + 0.095*10
+-.12 + 0.095*10
 ```
-The mean flow rate for X = 10 is **1.07 inches/unit time**.
+The mean flow rate for X = 10 is **0.83 inches/unit time**.
 
 ```{r}
-.12 + 0.095*15
+-.12 + 0.095*15
 ```
-The mean flow rate for X = 15 is **1.545 inches/unit time**.
+The mean flow rate for X = 15 is **1.305 inches/unit time**.
 
 ## b.
 The average change in flow rate is given by the slope of the linear model, $\beta_0$ = **0.095**.
 
 ## c.
+Given that Y(15) and Y(10) are two randomly selected points from a normally distributed random distribution, the difference D = a Y(15) - b Y(10) is a linear combination that can also be treated as a normally distributed random variable. The constants a & b are equal to 1 since the two distributions are weighted equally. We want to know the probability that D>0.
+```{r}
+## what is P(D > 0)
+
+## E(D) = E(Y(15)) - E(Y(10))
+D = 1.305 - 0.83
+
+## Var(D) = Var(Y(15)) - Var(Y(10))
+sd = 0.2 - 0.2
+
+## find the probability that a normal random variable with mean = 0.475
+## and sd = 0 will be greater than zero ?
+
+1 - pnorm(0, D, sd)
+```
+**100% probability** that the observation made when X = 15 will be great than when X = 10.
 
 
 ## 2. Hormone replacement therapy
@@ -74,8 +90,17 @@ CHIline = abline(CHImodel)
 ```
 
 ## b.
+```{r}
+summary(CHImodel)
+```
+**Yes** the data supports the hypothesis that there is a relationship between response time and head injury because **P < 0.05** for the slope of the line, $\beta_1$ = 1.59. 
 
-
+## c.
+```{r}
+CHImodelni = lm(CHI ~ Control - 1, data = CHI) # no intercept model
+summary(CHImodelni)
+```
+In the no-intercept model, the value for the slope becomes **$\hat{\beta}$ = 1.476**. This means that the time for a CHI person to perform a task is 48% longer than a non-impaired person. Model (a) fits better than (c) by definition, but Model (c) is simpler to interpret, and the $\beta$ values are similar.
 
 ## 4. MBA students (#11.44)
 
@@ -88,6 +113,7 @@ MBA <- read_excel("MBA.xls")
 ```{r}
 plot(MBA$EXPER, MBA$SALARY, xlab = "Experience", ylab = "Salary")
 ```
+
 Based on the scatter plot, most of the students with less experience have smaller salaries, but this is not always true.
 
 ## b.
@@ -172,8 +198,47 @@ The spearman rank correlation coefficient is **0.799**.
 ## d.
 The standard correlation coefficient increased by `r 0.832 - 0.695` while the spearman rank correlation coefficient increased by `r 0.799 - 0.7042`. Thus removing the outlier had a greater effect on the standard correlation coefficient.
 
+## 9. Habitat selection by black bears
 
+```{r include=FALSE}
+library(readxl)
+Bears <- read_excel("Bears.xls")
 
+plot(Bears$Weight, Bears$Range)
+plot(Bears$Age, Bears$Range)
+plot(Bears$Weight, Bears$Age)
+```
 
+## a.
+```{r}
+bearmod1 = lm(Bears$Range ~ Bears$Age)
+summary(bearmod1)
 
+bearmod2 = lm(Bears$Range ~ Bears$Weight)
+summary(bearmod2)
+
+bearmod3 = lm(Bears$Range ~ Bears$Age + Bears$Weight)
+summary(bearmod3)
+```
+
+## b.
+```{r}
+library(DHARMa)
+simulateResiduals(bearmod3, plot=T)
+```
+```{r}
+residuals = rstandard(bearmod3)
+qqnorm(residuals)
+```
+
+Based on the residual plot, the random deviation distribution seems approximately normal.
+
+## c.
+```{r}
+summary(bearmod3)
+
+# critical F-value
+qf(.95, 2, 8)
+```
+For the explanatory variable Age, p=0.686. For the explanatory variable Weight, p=0.663. Moreover, the F-statistic (0.3772) is less than 4.459, the critical F-value. Thus there is no significant difference in range size based on age or weight. So reduction to the null model is appropriate in this case.
 
