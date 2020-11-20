@@ -29,15 +29,15 @@ Given that Y(15) and Y(10) are two randomly selected points from a normally dist
 ## E(D) = E(Y(15)) - E(Y(10))
 D = 1.305 - 0.83
 
-## Var(D) = Var(Y(15)) - Var(Y(10))
-sd = 0.2 - 0.2
+## Var(D) = Var(Y(15)) + Var(Y(10))
+sd = 0.2 + 0.2
 
 ## find the probability that a normal random variable with mean = 0.475
 ## and sd = 0 will be greater than zero ?
 
 1 - pnorm(0, D, sd)
 ```
-**100% probability** that the observation made when X = 15 will be great than when X = 10.
+**88.25% probability** that the observation made when X = 15 will be great than when X = 10.
 
 
 ## 2. Hormone replacement therapy
