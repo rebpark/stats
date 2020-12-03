@@ -1,0 +1,144 @@
+---
+title: "HW6"
+author: "Wes Bonelli"
+output: html_notebook
+---
+
+## 1.
+
+```{r}
+proficiency = read.table('proficiency.txt', header = T, sep = '')
+proficiency$TM <- as.factor(proficiency$TM)
+proficiency_no_tm = proficiency[1:length(proficiency)-1]
+```
+
+### 1a.
+
+```{r}
+stem(proficiency_no_tm$E1)
+stem(proficiency_no_tm$E2)
+stem(proficiency_no_tm$E3)
+stem(proficiency_no_tm$E4)
+```
+
+From the stem-and-leaf plots we see that E1, E2, and E3 are unimodal while E4 appears to be bimodal. E1 and E3 seem roughly normal while E2 skews negative.
+
+### 1b.
+
+```{r}
+plot(proficiency_no_tm$E1, proficiency_no_tm$JPR)
+plot(proficiency_no_tm$E2, proficiency_no_tm$JPR)
+plot(proficiency_no_tm$E3, proficiency_no_tm$JPR)
+plot(proficiency_no_tm$E4, proficiency_no_tm$JPR)
+cor(proficiency_no_tm)
+```
+E3 and E4 scores show a strong positive correlation with job performance rating, and are almost as strongly correlated with one another, suggesting that we may face collinearity problems. We are not yet considering time of hiring (the other predictor variable), so it's unclear whether further multi-collinearity will emerge.
+
+### 1c.
+
+```{r}
+proficiency_model_no_tm = lm(JPR ~ E1 + E2 + E3 + E4, data = proficiency_no_tm)
+summary(proficiency_model_no_tm)
+```
+
+### 1d.
+
+```{r}
+anova(proficiency_model_no_tm)
+```
+
+TODO: try all models?? how best to decide?
+
+### 1e.
+
+```{r}
+library('ggplot2')
+proficiency_coefficients = coef(proficiency_model_no_tm)
+proficiency_no_tm$predicted = predict(proficiency_model_no_tm)
+proficiency_no_tm$residuals = residuals(proficiency_model_no_tm)
+ggplot(proficiency_no_tm, aes(x = E1, y = JPR)) +
+  geom_segment(aes(xend = E1, yend = predicted), alpha = .2) +
+  geom_point(aes(size = abs(residuals), color = residuals, alpha = .3)) +
+  guides(color = FALSE, size = FALSE, shape = FALSE, alpha = FALSE) +
+  geom_point(aes(y = predicted), shape = 1) +
+  theme_bw()
+ggplot(proficiency_no_tm, aes(x = E2, y = JPR)) +
+  geom_segment(aes(xend = E2, yend = predicted), alpha = .2) +
+  geom_point(aes(size = abs(residuals), color = residuals, alpha = .3)) +
+  guides(color = FALSE, size = FALSE, shape = FALSE, alpha = FALSE) +
+  geom_point(aes(y = predicted), shape = 1) +
+  theme_bw()
+ggplot(proficiency_no_tm, aes(x = E3, y = JPR)) +
+  geom_segment(aes(xend = E3, yend = predicted), alpha = .2) +
+  geom_point(aes(size = abs(residuals), color = residuals, alpha = .3)) +
+  guides(color = FALSE, size = FALSE, shape = FALSE, alpha = FALSE) +
+  geom_point(aes(y = predicted), shape = 1) +
+  theme_bw()
+ggplot(proficiency_no_tm, aes(x = E4, y = JPR)) +
+  geom_segment(aes(xend = E4, yend = predicted), alpha = .2) +
+  geom_point(aes(size = abs(residuals), color = residuals, alpha = .3)) +
+  guides(color = FALSE, size = FALSE, shape = FALSE, alpha = FALSE) +
+  geom_point(aes(y = predicted), shape = 1) +
+  theme_bw()
+library(magrittr)
+library(tidyr)
+proficiency_no_tm %>% 
+  gather(key = "iv", value = "score", -JPR, -predicted, -residuals) %>%
+  ggplot(aes(x = score, y = JPR)) +
+  geom_segment(aes(xend = score, yend = predicted), alpha = .2) +
+  geom_point(aes(size = abs(residuals), color = residuals, alpha = .3)) +
+  guides(color = FALSE, size = FALSE, shape = FALSE, alpha = FALSE) +
+  geom_point(aes(y = predicted), shape = 1) +
+  facet_grid(rows = vars(iv), scales = 'fixed', as.table = TRUE) +
+  theme_bw()
+```
+
+Applicants with marginally higher scores than predicted are show in lighter blue, while those with marginally lower scores are shown in darker blue. Residual magnitude is indicated by the size of point.
+
+### 1f.
+
+```{r}
+proficiency_model = lm(JPR ~ E1 + E2 + E3 + E4 + factor(TM), data = proficiency)
+summary(proficiency_model)
+anova(proficiency_model)
+proficiency_coefficients = coef(proficiency_model)
+proficiency$predicted = predict(proficiency_model)
+proficiency$residuals = residuals(proficiency_model)
+ggplot(proficiency, aes(x = E1, y = JPR)) +
+  geom_segment(aes(xend = E1, yend = predicted), alpha = .2) +
+  geom_point(aes(shape = TM, size = abs(residuals), color = residuals, alpha = .3)) +
+  guides(color = FALSE, size = FALSE, alpha = FALSE) +
+  geom_point(aes(y = predicted), shape = 1) +
+  theme_bw()
+ggplot(proficiency, aes(x = E2, y = JPR)) +
+  geom_segment(aes(xend = E2, yend = predicted), alpha = .2) +
+  geom_point(aes(shape = TM, size = abs(residuals), color = residuals, alpha = .3)) +
+  guides(color = FALSE, size = FALSE, alpha = FALSE) +
+  geom_point(aes(y = predicted), shape = 1) +
+  theme_bw()
+ggplot(proficiency, aes(x = E3, y = JPR)) +
+  geom_segment(aes(xend = E3, yend = predicted), alpha = .2) +
+  geom_point(aes(shape = TM, size = abs(residuals), color = residuals, alpha = .3)) +
+  guides(color = FALSE, size = FALSE, alpha = FALSE) +
+  geom_point(aes(y = predicted), shape = 1) +
+  theme_bw()
+ggplot(proficiency, aes(x = E4, y = JPR)) +
+  geom_segment(aes(xend = E4, yend = predicted), alpha = .2) +
+  geom_point(aes(shape = TM, size = abs(residuals), color = residuals, alpha = .3)) +
+  guides(color = FALSE, size = FALSE, alpha = FALSE) +
+  geom_point(aes(y = predicted), shape = 1) +
+  theme_bw()
+library(magrittr)
+library(tidyr)
+proficiency %>% 
+  gather(key = "iv", value = "score", -JPR, -predicted, -residuals, -TM) %>%
+  ggplot(aes(x = score, y = JPR)) +
+  geom_segment(aes(xend = score, yend = predicted), alpha = .2) +
+  geom_point(aes(shape = TM, size = abs(residuals), alpha = .3)) +
+  guides(color = FALSE, size = FALSE, alpha = FALSE) +
+  geom_point(aes(y = predicted), shape = 1) +
+  facet_grid(rows = vars(iv), scales = 'fixed', as.table = TRUE) +
+  theme_bw()
+```
+
+Applicants with marginally higher scores than predicted are show in lighter blue, while those with marginally lower scores are shown in darker blue. Residual magnitude is indicated by the size of point. Time of hiring is indicated by shape. From the ANOVA table we can see that time of hiring is associated with an F score of 0.093 and a p-value of 0.7618, thus there is not evidence that TM affects JPR. This is reflected in the plots: circles and triangles seem approximately equally distributed with respect to the vertical axis.
