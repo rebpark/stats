@@ -26,13 +26,12 @@ From the stem-and-leaf plots we see that E1, E2, and E3 are unimodal while E4 ap
 ### 1b.
 
 ```{r}
-plot(proficiency_no_tm$E1, proficiency_no_tm$JPR)
-plot(proficiency_no_tm$E2, proficiency_no_tm$JPR)
-plot(proficiency_no_tm$E3, proficiency_no_tm$JPR)
-plot(proficiency_no_tm$E4, proficiency_no_tm$JPR)
-cor(proficiency_no_tm)
+pairs(proficiency_no_tm)
+library(corrplot)
+proficiency_no_tm_cor = cor(proficiency_no_tm)
+corrplot(proficiency_no_tm_cor)
 ```
-E3 and E4 scores show a strong positive correlation with job performance rating, and are almost as strongly correlated with one another, suggesting that we may face collinearity problems. We are not yet considering time of hiring (the other predictor variable), so it's unclear whether further multi-collinearity will emerge.
+E3 and E4 scores show a strong positive correlation with job performance rating, and are also correlated with one another, though it's unclear whether the correlation is large enough to produce collinearity problems.
 
 ### 1c.
 
@@ -43,11 +42,20 @@ summary(proficiency_model_no_tm)
 
 ### 1d.
 
+As can be seen from the model summary, E1, E3, and E4 are significant terms, while E2 is just above the $\alpha$ = 0.05 significance threshold.
+
 ```{r}
-anova(proficiency_model_no_tm)
+library(car)
+vif(proficiency_model_no_tm)
 ```
 
-TODO: try all models?? how best to decide?
+As observed above, no pairs of independent variables show enough collinearity to provoke serious concern (variance inflation factors are all less than 10). Thus the best model is likely:
+
+```{r}
+proficiency_model_no_tm_best = lm(JPR ~ E1 + E3 + E4, data = proficiency_no_tm)
+summary(proficiency_model_no_tm_best)
+```
+
 
 ### 1e.
 
@@ -100,7 +108,6 @@ Applicants with marginally higher scores than predicted are show in lighter blue
 ```{r}
 proficiency_model = lm(JPR ~ E1 + E2 + E3 + E4 + factor(TM), data = proficiency)
 summary(proficiency_model)
-anova(proficiency_model)
 proficiency_coefficients = coef(proficiency_model)
 proficiency$predicted = predict(proficiency_model)
 proficiency$residuals = residuals(proficiency_model)
@@ -141,4 +148,142 @@ proficiency %>%
   theme_bw()
 ```
 
-Applicants with marginally higher scores than predicted are show in lighter blue, while those with marginally lower scores are shown in darker blue. Residual magnitude is indicated by the size of point. Time of hiring is indicated by shape. From the ANOVA table we can see that time of hiring is associated with an F score of 0.093 and a p-value of 0.7618, thus there is not evidence that TM affects JPR. This is reflected in the plots: circles and triangles seem approximately equally distributed with respect to the vertical axis.
+Applicants with marginally higher scores than predicted are show in lighter blue, while those with marginally lower scores are shown in darker blue. Residual magnitude is indicated by the size of point. Time of hiring is indicated by shape. From the model summary we can see that time of hiring is associated with a p-value of 0.7618, thus there is not evidence that TM affects JPR. This is reflected in the plots: circles and triangles seem approximately equally distributed with respect to the vertical axis.
+
+## 2.
+
+```{r}
+gradrec = read.table('gradrec.txt', header = T, sep = '')
+```
+
+### 2a.
+
+```{r}
+gradrec$IP = ifelse(gradrec$DG == 'P', 1, 0)
+gradrec$IF = ifelse(gradrec$SX == 'F', 1, 0)
+gradrec_model = lm(SCORE ~ E1 + E2 + GPA + IP + IF, data = gradrec)
+summary(gradrec_model)
+vif(gradrec_model)
+gradrec_coefficients = coef(gradrec_model)
+gradrec$predicted = predict(gradrec_model)
+gradrec$residuals = residuals(gradrec_model)
+ggplot(gradrec, aes(x = E1, y = SCORE)) +
+  geom_segment(aes(xend = E1, yend = predicted), alpha = .2) +
+  geom_point(aes(color = residuals)) +
+  scale_color_gradient2(low = "blue", mid = "white", high = "red") +
+  guides(color = FALSE, size = FALSE, shape = FALSE, alpha = FALSE) +
+  geom_point(aes(y = predicted), shape = 1) +
+  theme_bw()
+ggplot(gradrec, aes(x = E2, y = SCORE)) +
+  geom_segment(aes(xend = E2, yend = predicted), alpha = .2) +
+  geom_point(aes(color = residuals)) +
+  scale_color_gradient2(low = "blue", mid = "white", high = "red") +
+  guides(color = FALSE, size = FALSE, shape = FALSE, alpha = FALSE) +
+  geom_point(aes(y = predicted), shape = 1) +
+  theme_bw()
+ggplot(gradrec, aes(x = GPA, y = SCORE)) +
+  geom_segment(aes(xend = GPA, yend = predicted), alpha = .2) +
+  geom_point(aes(color = residuals)) +
+  scale_color_gradient2(low = "blue", mid = "white", high = "red") +
+  guides(color = FALSE, size = FALSE, shape = FALSE, alpha = FALSE) +
+  geom_point(aes(y = predicted), shape = 1) +
+  theme_bw()
+ggplot(gradrec, aes(x = IP, y = SCORE)) +
+  geom_segment(aes(xend = IP, yend = predicted), alpha = .2) +
+  geom_point(aes(color = residuals)) +
+  scale_color_gradient2(low = "blue", mid = "white", high = "red") +
+  guides(color = FALSE, size = FALSE, shape = FALSE, alpha = FALSE) +
+  geom_point(aes(y = predicted), shape = 1) +
+  theme_bw()
+ggplot(gradrec, aes(x = IF, y = SCORE)) +
+  geom_segment(aes(xend = IF, yend = predicted), alpha = .2) +
+  geom_point(aes(color = residuals)) +
+  scale_color_gradient2(low = "blue", mid = "white", high = "red") +
+  guides(color = FALSE, size = FALSE, shape = FALSE, alpha = FALSE) +
+  geom_point(aes(y = predicted), shape = 1) +
+  theme_bw()
+```
+
+None of the variables are sufficiently collinear to cause concern, and the clear linear trends in the predictors E1, E2, and GPA suggests that a polynomial model is unnecessary. The full model with no additional polynomial terms is likely the best if we must use all 5 predictors.
+
+This model's $R^2$ = 0.9577.
+
+### 2b.
+
+```{r}
+gradrec_predictions = predict(
+  gradrec_model,
+  newdata = data.frame(E1=c(75), E2=c(69), GPA=c(3.75), IP=c(0), IF=c(1)),
+  se.fit = T)
+paste(
+  gradrec_predictions$fit - (1.96 * gradrec_predictions$se.fit),
+  gradrec_predictions$fit + (1.96 * gradrec_predictions$se.fit))
+```
+
+The 95% confidence interval is approx. [74.22, 75.75].
+
+### 2c.
+
+```{r}
+paste(
+  gradrec_predictions$fit - (1.64 * gradrec_predictions$se.fit),
+  gradrec_predictions$fit + (1.64 * gradrec_predictions$se.fit))
+```
+
+The 90% confidence interval is approx. [74.35, 75.62].
+
+### 2d.
+
+
+As seen above, GPA and scores on Exams 1 and 2 are significantly associated with overall score. Master's/PhD status and sex, on the other hand, can be discarded at $\alpha = 0.1$, even though degree status does seem to be slightly associated with score. None of the variables are sufficiently collinear to cause concern, and the clear linear trends in the other predictors suggests that a polynomial model is unnecessary. The best model is likely:
+
+```{r}
+gradrec_model_best = lm(SCORE ~ E1 + E2 + GPA, data = gradrec)
+summary(gradrec_model_best)
+```
+
+### 2e.
+
+```{r}
+gradrec_coefficients_best = coef(gradrec_model_best)
+gradrec$predicted_best = predict(gradrec_model_best)
+gradrec$residuals_best = residuals(gradrec_model_best)
+ggplot(gradrec, aes(x = E1, y = SCORE)) +
+  geom_segment(aes(xend = E1, yend = predicted_best), alpha = .2) +
+  geom_point(aes(color = residuals)) +
+  scale_color_gradient2(low = "blue", mid = "white", high = "red") +
+  guides(color = FALSE, size = FALSE, shape = FALSE, alpha = FALSE) +
+  geom_point(aes(y = predicted_best), shape = 1) +
+  theme_bw()
+ggplot(gradrec, aes(x = E2, y = SCORE)) +
+  geom_segment(aes(xend = E2, yend = predicted_best), alpha = .2) +
+  geom_point(aes(color = residuals)) +
+  scale_color_gradient2(low = "blue", mid = "white", high = "red") +
+  guides(color = FALSE, size = FALSE, shape = FALSE, alpha = FALSE) +
+  geom_point(aes(y = predicted_best), shape = 1) +
+  theme_bw()
+ggplot(gradrec, aes(x = GPA, y = SCORE)) +
+  geom_segment(aes(xend = GPA, yend = predicted_best), alpha = .2) +
+  geom_point(aes(color = residuals)) +
+  scale_color_gradient2(low = "blue", mid = "white", high = "red") +
+  guides(color = FALSE, size = FALSE, shape = FALSE, alpha = FALSE) +
+  geom_point(aes(y = predicted_best), shape = 1) +
+  theme_bw()
+```
+
+### 2f.
+
+```{r}
+table(gradrec[5:6])
+```
+
+In this department it seems male and female students are about equally likely to go on to a PhD.
+
+### 2g.
+
+The models are so different because exam scores and GPA predict student rating much better than MS/PhD status. Degree status can explain a modest amount of student score (i.e., it has a small effect on the multiple regression model's slope), but contributes fairly little in combination with E1, E2, and GPA.
+
+## 3.
+
+
+
