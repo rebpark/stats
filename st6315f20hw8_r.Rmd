@@ -285,5 +285,30 @@ The models are so different because exam scores and GPA predict student rating m
 
 ## 3.
 
+```{r}
+gasd = read.table('gasd96.txt', sep = '', header = T)
+gasd = gasd[2:length(gasd)]
+```
+
+### 3a.
+
+```{r}
+gasd_cor = cor(gasd[, sapply(gasd, is.numeric)])
+gasd_cor
+corrplot(gasd_cor)
+```
+
+Most observed correlations behave as expected. T3 and T5 scores both show strong positive correlations with T8 score (about 0.77 and 0.82, respectively). Small schools  do not seem to be associated with the best student scores, nor do medium-sized schools; correlations with T3, T5, and T8 scores are slightly stronger for large-enrollment districts than medium-enrollment, and slightly larger still for metropolitan areas, while population density is moderately positively correlated with higher scores. This seems to provide the least counter-evidence for the hypothesis that education tends to be better in urban areas, but this remains speculative. PLUN shows a strong negative correlation with all three test scores, as expected.
+
+### 3b.
+
+Only the pair of T3 and T5 would be disallowed.
+
+### 3c.
+
+```{r}
+gasd_model_full = lm(T8 ~ T3 + T5 + ENRL + DENS + IMTR + IM + IL + PLUN, data = gasd)
+summary(gasd_model_full)
+```
 
 
